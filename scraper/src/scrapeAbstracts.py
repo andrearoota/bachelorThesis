@@ -6,10 +6,11 @@ from pybliometrics.scopus import ScopusSearch
 from itertools import repeat
 
 class AbstractDownloader:
-    def __init__(self, start_year, end_year, subj_area):
+    def __init__(self, start_year, end_year, subj_area, mongodb_uri):
         self.start_year = start_year
         self.end_year = end_year
         self.subj_area = subj_area
+        self.mongodb_uri = mongodb_uri
     
     def run(self):
         years_range = list(range(self.start_year, self.end_year + 1))
@@ -20,9 +21,8 @@ class AbstractDownloader:
 
         print(f"Abstracts scraped: {sum(list_counts)}")
 
-
     def is_downloaded(self, year):
-        client = MongoClient(os.environ['MONGOBD_READ_URI'])
+        client = MongoClient(self.mongodb_uri)
         filter_query = {'coverDate': {'$regex': f'{year}-.*'}}
         projection = {'_id': 1}
         result_query = client['clusterScopus']['collectionAbstracts'].find(filter=filter_query, projection=projection, limit=1)
@@ -33,7 +33,7 @@ class AbstractDownloader:
             scopus_search = ScopusSearch(query=f'subjarea({subj_area})', verbose=True, refresh=True, date=year)
             df_scopus = pd.DataFrame(scopus_search.results).fillna('')
             
-            client = MongoClient(os.environ['MONGOBD_READ_URI'])
+            client = MongoClient(self.mongodb_uri)
             client['clusterScopus']['collectionAbstracts'].insert_many(df_scopus.to_dict('records'))
 
             count = df_scopus.shape[0]

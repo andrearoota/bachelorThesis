@@ -8,9 +8,8 @@ from pybliometrics.scopus import AuthorRetrieval
 
 class AuthorDownloader:
 
-    def __init__(self, mongodb_read_uri, mongodb_write_uri):
-        self.mongodb_read_uri = mongodb_read_uri
-        self.mongodb_write_uri = mongodb_write_uri
+    def __init__(self, mongodb_uri):
+        self.mongodb_uri = mongodb_uri
 
     def download_author_by_id(self, id_author):
         return AuthorRetrieval(author_id=id_author, refresh=True)
@@ -40,12 +39,12 @@ class AuthorDownloader:
     def download_authors_from_abstracts(self):
         spark = SparkSession.builder \
             .config("spark.driver.memory", "15g") \
-            .config("spark.mongodb.read.connection.uri", self.mongodb_read_uri) \
-            .config("spark.mongodb.write.connection.uri", self.mongodb_write_uri) \
+            .config("spark.mongodb.read.connection.uri", self.mongodb_uri) \
+            .config("spark.mongodb.write.connection.uri", self.mongodb_uri) \
             .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0") \
             .getOrCreate()
 
-        client = MongoClient(self.mongodb_read_uri)
+        client = MongoClient(self.mongodb_uri)
 
         print("Get all authors from abstracts")
         spark_authors_from_abstracts_distinct = self.get_authors_from_abstracts(spark, client)
