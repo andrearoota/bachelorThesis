@@ -5,6 +5,7 @@ from pyspark.sql.types import *
 from pymongo import MongoClient
 from multiprocessing.pool import Pool
 from pybliometrics.scopus import AuthorRetrieval
+from pybliometrics.scopus import exception
 
 class AuthorDownloader:
 
@@ -65,4 +66,8 @@ class AuthorDownloader:
         for index, row in df_authors_to_search.iterrows():
             author_id = row['author_id']
             print(f"Get author > {author_id} | {index + 1}/{count}")
-            client['clusterScopus']['collectionAuthors'].insert_one(self.download_author_by_id(author_id)._json)
+            try:
+                client['clusterScopus']['collectionAuthors'].insert_one(self.download_author_by_id(author_id)._json)
+            except exception.Scopus404Error:
+                print(f"author {row['author_id']} not found")
+
