@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 from src.scrapeAbstracts import AbstractDownloader
 from src.scrapeAuthors import AuthorDownloader
+from src.aggregateDocuments import AggregateDocuments
 from dotenv.main import load_dotenv
 import os
 
@@ -10,11 +11,11 @@ import os
 SUBJAREA_DEFAULT = 'COMP'
 YEAR_START_DEFAULT = 1850
 YEAR_END_DEFAULT = 2007
-URL_MONGODB = 'mongodb://localhost:27017/'
+URL_MONGODB = 'mongodb://root:root@localhost:27017/'
 
 def main ():
     parser = ArgumentParser(prog='scraperScopus', description='Scrape Abstract and Authors from Scopus')
-    parser.add_argument('--type', type=str, choices=['aut', 'abs'], required=True, help='aut => get authors from already downloaded abstracts, abs => get abstracts')
+    parser.add_argument('--type', type=str, choices=['aut', 'abs', 'agg'], required=True, help='aut => get authors from already downloaded abstracts, abs => get abstracts')
     parser.add_argument('--urimongo', type=str, default=URL_MONGODB, help=f'MongoDB uri (default: {URL_MONGODB})')
     parser.add_argument('--subjarea', type=str, default=SUBJAREA_DEFAULT, help=f'Represents the subject area code associated with the content category desired (default: {SUBJAREA_DEFAULT})')
     parser.add_argument('--start', type=int, default=YEAR_START_DEFAULT, help=f'Start year for scrape (default: {YEAR_START_DEFAULT})')
@@ -30,11 +31,16 @@ def main ():
             subj_area=args.subjarea,
             mongodb_uri=args.urimongo)
         obj.run()
-    else:
+    elif args.type == 'aut':
         obj = AuthorDownloader(
             mongodb_uri=args.urimongo,
         )
         obj.download_authors_from_abstracts()
+    else:
+        obj = AggregateDocuments(
+            mongodb_uri=args.urimongo,
+        )
+        obj.aggregate()
 
 if __name__ == '__main__':
     main()
