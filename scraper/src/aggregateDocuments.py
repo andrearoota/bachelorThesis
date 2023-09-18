@@ -34,7 +34,7 @@ class AggregateDocuments:
             where(col('author_ids_array') != array()). \
             withColumn('main_author', df_abstracts['author_ids_array'].getItem(0)). \
             groupBy(col('main_author').alias('main_author_ref')). \
-            agg(collect_list(struct(df_abstracts.columns)).alias(main_author))
+            agg(collect_list(struct(df_abstracts.columns)).alias('main_author'))
         
         df_authors = df_authors.join(df_main_authors, split(df_authors.coredata['dc:identifier'], ':')[1] == df_main_authors.main_author_ref, 'left') \
             .drop('main_author_ref')
@@ -54,7 +54,8 @@ class AggregateDocuments:
         
         df_authors = df_authors.select('*', struct('main_author', 'coauthor').alias('articles')). \
             drop('main_author'). \
-            drop('coauthor')
+            drop('coauthor'). \
+            drop('author_ids_array')
         
         return df_authors
 
@@ -67,22 +68,22 @@ class AggregateDocuments:
             .getOrCreate()
 
         print('Get all authors from authors')
-        spark_authors_from_authors = self.get_authors_from_authors_collection(spark)
+        df_authors = self.get_authors_from_authors_collection(spark)
 
-        if spark_authors_from_authors.isEmpty():
+        if df_authors.isEmpty():
             print('there are zero authors')
             return
 
         print('Get all abstracts from abstracts')
-        spark_abstracts_from_abstracts = self.get_abstracts_from_abstracts_collection(spark)
+        df_abstracts = self.get_abstracts_from_abstracts_collection(spark)
 
-        if spark_abstracts_from_abstracts.isEmpty():
+        if df_abstracts.isEmpty():
             print('there are zero abstracts')
             return
 
         df_abstracts_split_ids = self.split_author_ids(df_abstracts)
-        df_authors = self.aggregate_main_authors(df_authors, df_abstracts)
-        df_authors = self.aggregate_coauthors(df_authors, df_abstracts)
+        df_authors = self.aggregate_main_authors(df_authors, df_abstracts_split_ids)
+        df_authors = self.aggregate_coauthors(df_authors, df_abstracts_split_ids)
 
         df_authors.write \
             .format('mongodb') \
