@@ -13,7 +13,6 @@ class AggregateDocuments:
     COLLECTION_ABSTRACTS = 'collectionAbstracts'
     COLLECTION_AGGREGATE = 'collectionAuthorsAggregate'
 
-
     def __init__(self, mongodb_uri):
         self.mongodb_uri = mongodb_uri
 
@@ -92,5 +91,3 @@ class AggregateDocuments:
             .save()
         
         print('Abstracts aggregated')
-
-
