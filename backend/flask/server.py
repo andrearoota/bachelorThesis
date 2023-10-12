@@ -53,23 +53,23 @@ def avg_coauthors_career():
     df_filtered = pd.DataFrame(list(df_filtered))
 
     def extract_data(row):
-        yearStart = int(row['author-profile']['publication-range']['@start'])
-        df_counter = pd.DataFrame(columns=['years_since_creation', 'coauthors_count'])
+        career_start_year = int(row['author-profile']['publication-range']['@start'])
+        df_counter = pd.DataFrame(columns=['years_since_career_start', 'coauthors_count'])
 
         for type in ['main_author', 'coauthor']:
             if row.articles[type] is not None:
-                df_counter_temp = pd.DataFrame(columns=['years_since_creation', 'coauthors_count'])
+                df_counter_temp = pd.DataFrame(columns=['years_since_career_start', 'coauthors_count'])
                 df = pd.DataFrame(row.articles[type])
                 df_counter_temp['coauthors_count'] = df['author_count'].astype(int)
                 df['coverDate'] = pd.to_datetime(df['coverDate'])
-                df_counter_temp['years_since_creation'] = df['coverDate'].dt.year - yearStart
+                df_counter_temp['years_since_career_start'] = df['coverDate'].dt.year - career_start_year
                 df_counter = pd.concat([df_counter, df_counter_temp], ignore_index=True)
 
         return df_counter
 
     df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
     df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
-    df_filtered = df_filtered.groupby(by='years_since_creation', as_index=False).mean()
+    df_filtered = df_filtered.groupby(by='years_since_career_start', as_index=False).mean()
 
     return df_filtered.to_json(orient='records')
 
@@ -144,9 +144,9 @@ def h_index_career():
             df_abstracts = df_abstracts.sort_values('citedby_count', ascending=False).head(h_index)
 
             df_abstracts['coverYear'] = pd.to_datetime(df_abstracts['coverDate'])
-            df_abstracts['years_since_creation'] = df_abstracts['coverYear'].dt.year - career_start_year
+            df_abstracts['years_since_career_start'] = df_abstracts['coverYear'].dt.year - career_start_year
             max_difference = career_end_year - career_start_year
-            df_abstracts['coefficient'] = df_abstracts['years_since_creation'] / max_difference
+            df_abstracts['coefficient'] = df_abstracts['years_since_career_start'] / max_difference
             return df_abstracts['coefficient'].mean()
 
         return None
