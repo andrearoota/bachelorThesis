@@ -2,6 +2,7 @@
 import os
 import pandas as pd
 from flask import Flask
+from flask import request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
 
@@ -30,9 +31,16 @@ def todo():
 # Presi gli autori con h-index > X, come varia il numero medio di coautori dopo Y di anni di carriera?
 @app.route('/api/avg_coauthors_career')
 def avg_coauthors_career():
+
+    h_index_threshold = request.args.get('h-index', default=0, type=int)
+
     filter={
-        'h-index': {
-            '$gt': '5'
+        '$expr': {
+            '$gte': [
+                {
+                    '$toInt': '$h-index'
+                }, h_index_threshold
+            ]
         }
     }
     project={
@@ -40,6 +48,7 @@ def avg_coauthors_career():
         'articles': -1, 
         'author-profile.publication-range.@start': -1
     }
+
     df_filtered = mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
     df_filtered = pd.DataFrame(list(df_filtered))
 
@@ -99,11 +108,19 @@ def corr_citation_coauthors():
 # Presi gli autori con h-index > X, quando sono stati realizzati gli articoli che influiscono sull’h-index? In quale momento della carriera?
 @app.route('/api/h_index_career')
 def h_index_career():
+
+    h_index_threshold = request.args.get('h-index', default=0, type=int)
+
     filter={
-        'h-index': {
-            '$gt': '5'
+        '$expr': {
+            '$gte': [
+                {
+                    '$toInt': '$h-index'
+                }, h_index_threshold
+            ]
         }
     }
+
     project={
         '_id': 0, 
         'articles': -1,
