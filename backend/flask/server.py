@@ -160,6 +160,65 @@ def h_index_career():
         }
     )
 
+# Dato un insieme di autori con h-index > X, la variazione tra h-index e articoli non presi in considerazione per il
+# calcolo dell'indice determinando se vi è anche una correlazione.
+@app.route('/api/abstracts_outside_h_index')
+def abstracts_outside_h_index():
+
+    h_index_threshold = request.args.get('h-index', default=0, type=int)
+
+    filter={
+        '$expr': {
+            '$gte': [
+                {
+                    '$toInt': '$h-index'
+                }, h_index_threshold
+            ]
+        }
+    }
+
+    project={
+        '_id': 0, 
+        'h-index': -1,
+        'document-count': '$coredata.document-count'
+    }
+    df_filtered = mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
+    df_filtered = pd.DataFrame(list(df_filtered))
+
+    return dumps(
+        {
+            'correlation': df_filtered['h-index'].corr(df_filtered['document-count'])
+        }
+    )
+
+# Vi è una relazione tra h-index e numero di anni di carriera?
+@app.route('/api/corr_career_h_index')
+def corr_career_h_index():
+
+    filter={
+        'author-profile.publication-range': {
+            '$ne': None
+        }
+    }
+
+    project={
+        '_id': 0, 
+        'h-index': -1,
+        'end': '$author-profile.publication-range.@end',
+        'start': '$author-profile.publication-range.@start'
+    }
+    df_filtered = mongo.db.collectionAuthorsAggregate.find(projection=project, filter=filter)
+    df_filtered = pd.DataFrame(list(df_filtered))
+    
+    df_filtered['duration_career'] = df_filtered['end'].astype(int) - df_filtered['start'].astype(int)
+
+    return dumps(
+        {
+            'correlation': df_filtered['h-index'].corr(df_filtered['duration_career'])
+        }
+    )
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.environ.get('FLASK_SERVER_PORT', 9091), debug=True)
 
