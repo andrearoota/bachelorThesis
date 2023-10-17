@@ -209,7 +209,7 @@ def corr_career_h_index():
     }
     df_filtered = mongo.db.collectionAuthorsAggregate.find(projection=project, filter=filter)
     df_filtered = pd.DataFrame(list(df_filtered))
-    
+
     df_filtered['duration_career'] = df_filtered['end'].astype(int) - df_filtered['start'].astype(int)
 
     return dumps(
@@ -218,6 +218,54 @@ def corr_career_h_index():
         }
     )
 
+# Dato un insieme di autori con h-index > X, come varia il numero di citazioni di un autore in base al ranking della conferenza.
+@app.route('/api/corr_rating_citedby')
+def corr_rating_citedby():
+
+    h_index_threshold = request.args.get('h-index', default=0, type=int)
+
+    filter={
+        '$expr': {
+            '$gte': [
+                {
+                    '$toInt': '$h-index'
+                }, h_index_threshold
+            ]
+        }
+    }
+
+    project={
+        '_id': 0, 
+        'h-index': -1,
+        'articles': -1
+    }
+    df_filtered = mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project, limit=1000)
+    df_filtered = pd.DataFrame(list(df_filtered))
+
+    def extract_data(row):
+        df_abstracts = pd.DataFrame()
+
+        for type in ['main_author', 'coauthor']:
+            if row.articles[type] is not None:
+                df = pd.DataFrame(row.articles[type])
+                df = df[df['GGS_Rating'].notna()]
+                df_abstracts = pd.concat([df_abstracts, df], ignore_index=True)
+
+        return df_abstracts
+
+    df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
+    df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
+
+    #return dumps(df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean())
+
+    #df_filtered['GGS_Rating'] = df_filtered['GGS_Rating'].astype('category').cat.codes
+
+    return dumps(
+        {
+            'correlation': df_filtered['GGS_Rating'].astype('category').cat.codes.corr(df_filtered['citedby_count']),
+            'avg_by_rating': df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean()
+        }
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.environ.get('FLASK_SERVER_PORT', 9091), debug=True)
