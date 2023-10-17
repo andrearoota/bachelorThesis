@@ -239,7 +239,7 @@ def corr_rating_citedby():
         'h-index': -1,
         'articles': -1
     }
-    df_filtered = mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project, limit=1000)
+    df_filtered = mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
     df_filtered = pd.DataFrame(list(df_filtered))
 
     def extract_data(row):
