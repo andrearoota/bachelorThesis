@@ -55,6 +55,7 @@ class AuthorDownloader:
 
         # Download data for each author
         for index, row in df_authors_to_search.iterrows():
+            time.sleep(0.34) # Sometimes pybliometrics sleep doesn't work. 
             author_id = row['author_id']
             print(f"Get author > {author_id} | {index + 1}/{count}")
             try:
