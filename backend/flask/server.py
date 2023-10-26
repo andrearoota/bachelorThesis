@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://root:root@host.docker.internal:27017/clusterScopus?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false'
 mongo = PyMongo(app)
 
-@app.route('/api//all_analysis')
+@app.route('/api/all_analysis')
 def all_analysis():
         
     h_index_threshold = request.args.get('h-index', default=0, type=int)
