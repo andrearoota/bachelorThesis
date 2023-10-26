@@ -11,13 +11,18 @@ app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://root:root@host.docker.internal:27017/clusterScopus?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false'
 mongo = PyMongo(app)
 
+@app.route('/api/saved-analysis')
+def saved_analysis():
+    return dumps(list(mongo.db.cacheAnalysis.find(filter={})))
+
 @app.route('/api/all_analysis')
 def all_analysis():
         
     h_index_threshold = request.args.get('h-index', default=0, type=int)
+    title_analysis = request.args.get('title', default=f'analysis-{h_index_threshold}-hindex', type=str)
 
     result = {
-            'avg_coauthors_career': loads(avg_coauthors_career(h_index_threshold)),
+            'corr_coauthors_career': loads(corr_coauthors_career(h_index_threshold)),
             'corr_citation_coauthors': loads(corr_citation_coauthors()),
             'h_index_career': loads(h_index_career(h_index_threshold)),
             'abstracts_outside_h_index': loads(abstracts_outside_h_index(h_index_threshold)),
@@ -28,14 +33,14 @@ def all_analysis():
     mongo.db.cacheAnalysis.insert_one({
         'h-index': h_index_threshold,
         'datetime': datetime.now(),
-        'name': f'analysis-{h_index_threshold}-hindex',
+        'name': title_analysis,
         'data':result
     })
     return result
 
 # Presi gli autori con h-index > X, come varia il numero medio di coautori dopo Y di anni di carriera?
-@app.route('/api/avg_coauthors_career')
-def avg_coauthors_career(h_index = 0):
+@app.route('/api/corr_coauthors_career')
+def corr_coauthors_career(h_index = 0):
 
     h_index_threshold = request.args.get('h-index', default=h_index, type=int)
 
@@ -74,7 +79,13 @@ def avg_coauthors_career(h_index = 0):
     df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
     df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
     df_filtered = df_filtered.groupby(by='years_since_career_start', as_index=False).mean()
-    return df_filtered.to_json(orient='records')
+
+    return dumps(
+        {
+            'correlation': df_filtered['years_since_career_start'].corr(df_filtered['coauthors_count']),
+            'avg_coauthors_career': loads(df_filtered.to_json(orient='records'))
+        }
+    )
 
 # Vi è una relazione (e quindi un effetto sul h-index) tra il numero di coautori di un articolo e il numero di citazioni? Avere più coautori influisce sul numero di citazioni?
 @app.route('/api/corr_citation_coauthors')
@@ -259,7 +270,7 @@ def corr_rating_citedby(h_index = 0):
     return dumps(
         {
             'correlation': df_filtered['GGS_Rating'].astype('category').cat.codes.corr(df_filtered['citedby_count']),
-            'avg_by_rating': df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean()
+            'avg_by_rating': loads(df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean().to_json(orient='records'))
         }
     )
 
