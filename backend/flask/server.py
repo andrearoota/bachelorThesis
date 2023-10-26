@@ -4,42 +4,46 @@ import pandas as pd
 from flask import Flask
 from flask import request
 from flask_pymongo import PyMongo
-from bson.json_util import dumps
-
+from bson.json_util import dumps, loads
 from datetime import datetime
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://root:root@host.docker.internal:27017/clusterScopus?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false'
 mongo = PyMongo(app)
 
-@app.route('/')
-def todo():
-    filter={
-    '$text': {
-            '$search': 'andr'
+@app.route('/api//all_analysis')
+def all_analysis():
+        
+    h_index_threshold = request.args.get('h-index', default=0, type=int)
+
+    result = {
+            'avg_coauthors_career': loads(avg_coauthors_career(h_index_threshold)),
+            'corr_citation_coauthors': loads(corr_citation_coauthors()),
+            'h_index_career': loads(h_index_career(h_index_threshold)),
+            'abstracts_outside_h_index': loads(abstracts_outside_h_index(h_index_threshold)),
+            'corr_career_h_index': loads(corr_career_h_index()),
+            'corr_rating_citedby': loads(corr_rating_citedby(h_index_threshold))
         }
-    }
-    project={
-        'author-profile.preferred-name': 1
-    }
-    try:
-        return f'{list(mongo.db.collectionAuthors.find(filter=filter,projection=project,limit=5))}'
-    except:
-        return 'Server not available'
-    return 'Hello from the MongoDB client!\n'
+
+    mongo.db.cacheAnalysis.insert_one({
+        'h-index': h_index_threshold,
+        'datetime': datetime.now(),
+        'name': f'analysis-{h_index_threshold}-hindex',
+        'data':result
+    })
+    return result
 
 # Presi gli autori con h-index > X, come varia il numero medio di coautori dopo Y di anni di carriera?
 @app.route('/api/avg_coauthors_career')
-def avg_coauthors_career():
+def avg_coauthors_career(h_index = 0):
 
-    h_index_threshold = request.args.get('h-index', default=0, type=int)
+    h_index_threshold = request.args.get('h-index', default=h_index, type=int)
 
     filter={
         '$expr': {
             '$gte': [
-                {
-                    '$toInt': '$h-index'
-                }, h_index_threshold
+                '$h-index',
+                h_index_threshold
             ]
         }
     }
@@ -70,7 +74,6 @@ def avg_coauthors_career():
     df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
     df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
     df_filtered = df_filtered.groupby(by='years_since_career_start', as_index=False).mean()
-
     return df_filtered.to_json(orient='records')
 
 # Vi è una relazione (e quindi un effetto sul h-index) tra il numero di coautori di un articolo e il numero di citazioni? Avere più coautori influisce sul numero di citazioni?
@@ -107,16 +110,15 @@ def corr_citation_coauthors():
 
 # Presi gli autori con h-index > X, quando sono stati realizzati gli articoli che influiscono sull’h-index? In quale momento della carriera?
 @app.route('/api/h_index_career')
-def h_index_career():
+def h_index_career(h_index = 0):
 
-    h_index_threshold = request.args.get('h-index', default=0, type=int)
+    h_index_threshold = request.args.get('h-index', default=h_index, type=int)
 
     filter={
         '$expr': {
             '$gte': [
-                {
-                    '$toInt': '$h-index'
-                }, h_index_threshold
+                '$h-index',
+                h_index_threshold
             ]
         }
     }
@@ -163,16 +165,15 @@ def h_index_career():
 # Dato un insieme di autori con h-index > X, la variazione tra h-index e articoli non presi in considerazione per il
 # calcolo dell'indice determinando se vi è anche una correlazione.
 @app.route('/api/abstracts_outside_h_index')
-def abstracts_outside_h_index():
+def abstracts_outside_h_index(h_index = 0):
 
-    h_index_threshold = request.args.get('h-index', default=0, type=int)
+    h_index_threshold = request.args.get('h-index', default=h_index, type=int)
 
     filter={
         '$expr': {
             '$gte': [
-                {
-                    '$toInt': '$h-index'
-                }, h_index_threshold
+                '$h-index',
+                h_index_threshold
             ]
         }
     }
@@ -218,18 +219,17 @@ def corr_career_h_index():
         }
     )
 
-# Dato un insieme di autori con h-index > X, come varia il numero di citazioni di un autore in base al ranking della conferenza.
+# Dato un insieme di autori con h-index > X, come varia il numero di citazioni di un autore in base al ranking della conferenza
 @app.route('/api/corr_rating_citedby')
-def corr_rating_citedby():
+def corr_rating_citedby(h_index = 0):
 
-    h_index_threshold = request.args.get('h-index', default=0, type=int)
+    h_index_threshold = request.args.get('h-index', default=h_index, type=int)
 
     filter={
         '$expr': {
             '$gte': [
-                {
-                    '$toInt': '$h-index'
-                }, h_index_threshold
+                '$h-index',
+                h_index_threshold
             ]
         }
     }
@@ -255,10 +255,6 @@ def corr_rating_citedby():
 
     df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
     df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
-
-    #return dumps(df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean())
-
-    #df_filtered['GGS_Rating'] = df_filtered['GGS_Rating'].astype('category').cat.codes
 
     return dumps(
         {
