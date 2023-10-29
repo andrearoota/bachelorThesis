@@ -1,11 +1,11 @@
-# ScraperScopus
+# ScopusBulkDownloader
 
-`ScraperScopus` is a Python script that allows you to download abstracts and authors from Scopus based on the specified criteria.
+`ScopusBulkDownloader` is a Python script that allows you to download abstracts and authors from Scopus based on the specified criteria.
 
 ## Usage
 
 ```
-usage: scraperScopus [-h] --type {aut,abs,agg} [--urimongo URIMONGO] [--subjarea SUBJAREA] [--start START] [--end END]
+usage: scopusBulkDownloader [-h] --type {aut,abs,agg} [--urimongo URIMONGO] [--subjarea SUBJAREA] [--start START] [--end END]
 
 Download Abstract and Authors from Scopus
 
@@ -31,31 +31,31 @@ optional arguments:
 1. To get authors from already downloaded abstracts:
 
 ```
-scraperScopus --type aut 
+scopusBulkDownloader --type aut 
 ```
 
 2. To get abstracts using the default parameters:
 
 ```
-scraperScopus --type abs
+scopusBulkDownloader --type abs
 ```
 
 3. To aggregate data:
 
 ```
-scraperScopus --type agg
+scopusBulkDownloader --type agg
 ```
 
 4. To get abstracts in the subject area `BIOC` from the year `2010` to `2021`:
 
 ```
-scraperScopus --type abs --subjarea BIOC --start 2010 --end 2021
+scopusBulkDownloader --type abs --subjarea BIOC --start 2010 --end 2021
 ```
 
 ## Requirements
 
 - Python >= 3.9
-- Required Python packages (`scopus`, `pymongo`, `pandas`, `pyspark`, etc.)
+- Required Python packages (`pybliometrics`, `pymongo`, `pandas`, `pyspark`, etc.)
 - MongoDB server
 
 ## License
