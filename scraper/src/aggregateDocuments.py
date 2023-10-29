@@ -1,4 +1,3 @@
-import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
@@ -12,6 +11,7 @@ class AggregateDocuments:
     COLLECTION_AUTHORS = 'collectionAuthors'
     COLLECTION_ABSTRACTS = 'collectionAbstracts'
     COLLECTION_AGGREGATE = 'collectionAuthorsAggregate'
+    FILENAME_CONFERENCE_RATING = '/Users/andrearota/Documents/GitHub/bachelorThesis/scraper/data/GII-GRIN-SCIE-Conference-Rating-24-ott-2021.csv'
 
     def __init__(self, mongodb_uri):
         self.mongodb_uri = mongodb_uri
@@ -32,9 +32,8 @@ class AggregateDocuments:
         return spark_collection.withColumn('author_ids_array', split(col('author_ids'), ';'))
 
     def join_conference_rating(self, spark, spark_abstracts):
-        df_conference_rating = pd.read_csv('/Users/andrearota/Documents/GitHub/bachelorThesis/scraper/data/GII-GRIN-SCIE-Conference-Rating-24-ott-2021.csv', on_bad_lines='skip', sep=';')
-        df_conference_rating = df_conference_rating[df_conference_rating['GGS Rating'] != 'Work in Progress']
-        df_conference_rating = spark.createDataFrame(df_conference_rating)
+        df_conference_rating = spark.read.options(delimiter=';', header=True).csv(self.FILENAME_CONFERENCE_RATING)
+        df_conference_rating = df_conference_rating.filter(df_conference_rating['GGS Rating'] != 'Work in Progress')
         df_conference_rating = df_conference_rating.withColumnRenamed('GGS Rating','GGS_Rating')
 
         return spark_abstracts.alias('base').join(df_conference_rating.alias('external'), lower(col('publicationName')).contains(lower(df_conference_rating['Title'])), 'left') \
@@ -81,16 +80,16 @@ class AggregateDocuments:
         print('Get all authors from authors')
         spark_authors = self.get_authors_from_authors_collection(spark)
 
-        if spark_authors.isEmpty():
+        """ if spark_authors.isEmpty():
             print('there are zero authors')
-            return
+            return """
 
         print('Get all abstracts from abstracts')
         spark_abstracts = self.get_abstracts_from_abstracts_collection(spark)
 
-        if spark_abstracts.isEmpty():
+        """ if spark_abstracts.isEmpty():
             print('there are zero abstracts')
-            return
+            return """
 
         print('Convert some string fields to int')
         spark_authors = self.convert_string_column_to_int(spark_authors, 'h-index')
