@@ -23,8 +23,8 @@ optional arguments:
 - `--type`: Specify the action to be performed. Use `aut` to get authors from already downloaded abstracts, or `abs` to get abstracts, or `agg` to aggregate data
 - `--urimongo`: MongoDB URI for connecting to the database. If not provided, the default URI is `mongodb://localhost:27017/`.
 - `--subjarea`: Represents the subject area code associated with the content category desired. The default value is `COMP`.
-- `--start`: The start year for the scrape. The default value is `1850`.
-- `--end`: The end year for the scrape. The default value is `2007`.
+- `--start`: Start year to download abstracts . The default value is `1850`.
+- `--end`: End year to download abstracts. The default value is `2007`.
 
 ## Examples
 
