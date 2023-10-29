@@ -70,7 +70,7 @@ def corr_coauthors_career(h_index = 0):
             if row.articles[type] is not None:
                 df_counter_temp = pd.DataFrame(columns=['years_since_career_start', 'coauthors_count'])
                 df = pd.DataFrame(row.articles[type])
-                df_counter_temp['coauthors_count'] = df['author_count'].astype(int)
+                df_counter_temp['coauthors_count'] = df['author_count']
                 df['coverDate'] = pd.to_datetime(df['coverDate'])
                 df_counter_temp['years_since_career_start'] = df['coverDate'].dt.year - career_start_year
                 df_counter = pd.concat([df_counter, df_counter_temp], ignore_index=True)
