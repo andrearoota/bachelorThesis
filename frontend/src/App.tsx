@@ -8,6 +8,8 @@ import TableSavedAnalysis from './components/TableSavedAnalysis';
 import FormNewAnalysis from './components/FormNewAnalysis';
 import CorrCoauthorsCareerChart, { CorrCoauthorsCareerType } from './components/CorrCoauthorsCareerChart';
 import CorrRatingCitedByChart, { CorrRatingCitedType } from './components/CorrRatingCitedByChart';
+import CorrCitationCoauthorsChart, { CorrCitationCoauthorsType } from './components/CorrCitationCoauthorsChart';
+import HIndex, { HIndexType } from './components/HIndexChart';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Item = styled(Paper)(({ theme }) => ({
@@ -75,6 +77,12 @@ export default function App() {
         </Grid>
         <Grid xs={12}>
           <CorrRatingCitedByChart data={analysisShow?.data.corr_rating_citedby as CorrRatingCitedType} />
+        </Grid>
+        <Grid xs={6}>
+          <CorrCitationCoauthorsChart data={analysisShow?.data.corr_citation_coauthors as CorrCitationCoauthorsType} />
+        </Grid>
+        <Grid xs={6}>
+          <HIndex data={analysisShow?.data.h_index_career as HIndexType} />
         </Grid>
       </Grid>
     </Box>

@@ -6,6 +6,7 @@ from flask import request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps, loads
 from datetime import datetime
+import numpy as np
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://root:root@host.docker.internal:27017/clusterScopus?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false'
@@ -92,30 +93,22 @@ def corr_coauthors_career(h_index = 0):
 def corr_citation_coauthors():
     project={
         '_id': 0, 
-        'articles': -1, 
+        'author_count': 1,
+        'citedby_count': 1
     }
-    df_filtered = mongo.db.collectionAuthorsAggregate.find(projection=project)
+    df_filtered = mongo.db.collectionAbstracts.find(projection=project)
     df_filtered = pd.DataFrame(list(df_filtered))
 
-    def extract_data(row):
-        df_counter = pd.DataFrame(columns=['citedby_count', 'coauthors_count'])
-
-        for type in ['main_author', 'coauthor']:
-            if row.articles[type] is not None:
-                df_counter_temp = pd.DataFrame(columns=['citedby_count', 'coauthors_count'])
-                df = pd.DataFrame(row.articles[type])
-                df_counter_temp['coauthors_count'] = df['author_count'].astype(int)
-                df_counter_temp['citedby_count'] = df['citedby_count'].astype(int)
-                df_counter = pd.concat([df_counter, df_counter_temp], ignore_index=True)
-
-        return df_counter
-
-    df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
-    df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
+    df_filtered['author_count'].replace('', np.nan, inplace=True)
+    df_filtered['citedby_count'].replace('', np.nan, inplace=True)
+    df_filtered.dropna(subset=['author_count', 'citedby_count'], inplace=True)
+    
+    df_filtered = df_filtered.astype({"author_count":"int","citedby_count":"int"})
 
     return dumps(
         {
-            'correlation': df_filtered['coauthors_count'].corr(df_filtered['citedby_count'])
+            'correlation': df_filtered['author_count'].corr(df_filtered['citedby_count']),
+            'data': loads(df_filtered.drop_duplicates(subset=['author_count', 'citedby_count']).to_json(orient='records'))
         }
     )
 
@@ -151,7 +144,7 @@ def h_index_career(h_index = 0):
 
         for type in ['main_author', 'coauthor']:
             if row.articles[type] is not None:
-                df_abstracts = pd.concat([df_abstracts, pd.DataFrame(row.articles[type])], ignore_index=True)
+                df_abstracts = pd.concat([df_abstracts, pd.DataFrame(row.articles[type])[['coverDate', 'citedby_count']]], ignore_index=True)
 
         if not df_abstracts.empty:
             df_abstracts = df_abstracts.sort_values('citedby_count', ascending=False).head(h_index)
@@ -169,7 +162,8 @@ def h_index_career(h_index = 0):
 
     return dumps(
         {
-            'weight_career': df_filtered.mean()
+            'weight_career_avg': df_filtered.mean(),
+            'weight_career_data': loads(df_filtered.to_json(orient='records'))
         }
     )
 
