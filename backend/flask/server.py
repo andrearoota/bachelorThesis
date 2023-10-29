@@ -64,7 +64,7 @@ def average_coauthors_variation_after_years_api():
 def coauthors_impact_on_citations_and_hindex_api():
     analyses_obj = analyses(mongo)
 
-    return obj.coauthors_impact_on_citations_and_hindex()
+    return analyses_obj.coauthors_impact_on_citations_and_hindex()
 
 
 # Among authors with an h-index > X, when were the articles that influence the h-index published? At what point in their careers?
@@ -91,7 +91,7 @@ def correlation_between_hindex_and_excluded_articles_api():
 def correlation_between_hindex_and_career_duration_api():
     analyses_obj = analyses(mongo)
 
-    return obj.correlation_between_hindex_and_career_duration()
+    return analyses_obj.correlation_between_hindex_and_career_duration()
 
 
 # Given a set of authors with an h-index > X, is there a correlation between the number of citations 

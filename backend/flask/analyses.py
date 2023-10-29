@@ -11,17 +11,17 @@ class analyses:
 
     def average_coauthors_variation_after_years(self):
         filter={
-            '$expr': {
-                '$gte': [
-                    '$h-index',
-                    self.h_index
-                ]
+            'author-profile.publication-range.@start': {
+                '$exists': True
+            }, 
+            'h-index': {
+                '$gte': self.h_index
             }
         }
         project={
             '_id': 0, 
-            'articles': -1, 
-            'author-profile.publication-range.@start': -1
+            'articles': 1, 
+            'author-profile.publication-range.@start': 1
         }
 
         df_filtered = self.mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
@@ -36,8 +36,8 @@ class analyses:
                     df_counter_temp = pd.DataFrame(columns=['years_since_career_start', 'coauthors_count'])
                     df = pd.DataFrame(row.articles[type])
                     df_counter_temp['coauthors_count'] = df['author_count']
-                    df['coverDate'] = pd.to_datetime(df['coverDate'])
-                    df_counter_temp['years_since_career_start'] = df['coverDate'].dt.year - career_start_year
+                    df['coverDate'] = [x[:4] for x in df['coverDate']]
+                    df_counter_temp['years_since_career_start'] = df['coverDate'].astype(int) - career_start_year
                     df_counter = pd.concat([df_counter, df_counter_temp], ignore_index=True)
 
             return df_counter
@@ -77,19 +77,22 @@ class analyses:
 
     def analyze_hindex_influential_articles_timing(self):
         filter={
-            '$expr': {
-                '$gte': [
-                    '$h-index',
-                    self.h_index
-                ]
+            'author-profile.publication-range.@start': {
+                '$exists': True
+            },
+            'author-profile.publication-range.@end': {
+                '$exists': True
+            },
+            'h-index': {
+                '$gte': self.h_index
             }
         }
 
         project={
             '_id': 0, 
-            'articles': -1,
-            'h-index': -1 ,
-            'author-profile.publication-range': -1
+            'articles': 1,
+            'h-index': 1 ,
+            'author-profile.publication-range': 1
         }
         df_filtered =self.mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
         df_filtered = pd.DataFrame(list(df_filtered))
@@ -121,31 +124,30 @@ class analyses:
         return dumps(
             {
                 'weight_career_avg': df_filtered.mean(),
-                'weight_career_data': loads(df_filtered.to_json(orient='records'))
+                'data': loads(df_filtered.to_json(orient='records'))
             }
         )
 
     def correlation_between_hindex_and_excluded_articles(self):
         filter={
-            '$expr': {
-                '$gte': [
-                    '$h-index',
-                    self.h_index
-                ]
+            'h-index': {
+                '$gte': self.h_index
             }
         }
 
         project={
             '_id': 0, 
-            'h-index': -1,
+            'h-index': 1,
             'document-count': '$coredata.document-count'
         }
         df_filtered =self.mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
         df_filtered = pd.DataFrame(list(df_filtered))
+        df_filtered['document-count'] = df_filtered['document-count'].astype(int) - df_filtered['h-index']
 
         return dumps(
             {
-                'correlation': df_filtered['h-index'].corr(df_filtered['document-count'])
+                'correlation': df_filtered['h-index'].corr(df_filtered['document-count']),
+                'data': loads(df_filtered.drop_duplicates(subset=['h-index', 'document-count']).to_json(orient='records'))
             }
         )
 
@@ -158,7 +160,7 @@ class analyses:
 
         project={
             '_id': 0, 
-            'h-index': -1,
+            'h-index': 1,
             'end': '$author-profile.publication-range.@end',
             'start': '$author-profile.publication-range.@start'
         }
@@ -169,24 +171,22 @@ class analyses:
 
         return dumps(
             {
-                'correlation': df_filtered['h-index'].corr(df_filtered['duration_career'])
+                'correlation': df_filtered['h-index'].corr(df_filtered['duration_career']),
+                'data': loads(df_filtered.drop_duplicates(subset=['duration_career', 'h-index'])[['duration_career', 'h-index']].to_json(orient='records'))
             }
         )
 
     def citation_count_based_on_conference_ranking(self):
         filter={
-            '$expr': {
-                '$gte': [
-                    '$h-index',
-                    self.h_index
-                ]
+            'h-index': {
+                '$gte': self.h_index
             }
         }
 
         project={
             '_id': 0, 
-            'h-index': -1,
-            'articles': -1
+            'h-index': 1,
+            'articles': 1
         }
         df_filtered =self.mongo.db.collectionAuthorsAggregate.find(filter=filter,projection=project)
         df_filtered = pd.DataFrame(list(df_filtered))
