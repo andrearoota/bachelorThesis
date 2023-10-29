@@ -1,7 +1,7 @@
 import { BarEChart, EChartsOption } from "./EchartsBaseComponent/BarEChart";
 import { Paper } from "@mui/material";
 
-export interface CorrCoauthorsCareerType {
+export interface AverageCoauthorsVariationAfterYearsType {
     correlation: number;
     avg_coauthors_career: AvgCoauthorsCareerType[];
 }
@@ -12,10 +12,10 @@ interface AvgCoauthorsCareerType {
 }
 
 interface Props {
-    data: CorrCoauthorsCareerType | undefined
+    data: AverageCoauthorsVariationAfterYearsType | undefined
 }
 
-export default function CorrCoauthorsCareerChart({data}: Props) {
+export default function AverageCoauthorsVariationAfterYearsChart({data}: Props) {
     const years = data?.avg_coauthors_career.map(item => item.years_since_career_start);
     const coauthors = data?.avg_coauthors_career.map(item => item.coauthors_count);
     const title = `Average Coauthors over Career Years, correlation: ${data?.correlation}`

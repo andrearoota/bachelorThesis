@@ -1,7 +1,7 @@
 import { BarEChart, EChartsOption } from "./EchartsBaseComponent/BarEChart";
 import { Paper } from "@mui/material";
 
-export interface CorrRatingCitedType {
+export interface CitationCountBasedOnConferenceRankingType {
     correlation: number;
     avg_by_rating: AvgByRatingType[]
   }
@@ -12,10 +12,10 @@ interface AvgByRatingType {
 }
 
 interface Props {
-    data: CorrRatingCitedType | undefined
+    data: CitationCountBasedOnConferenceRankingType | undefined
 }
 
-export default function CorrRatingCitedByChart({data}: Props) {
+export default function CitationCountBasedOnConferenceRankingChart({data}: Props) {
 
     const ratings = data?.avg_by_rating.map(item => item.GGS_Rating);
     const citedCounts = data?.avg_by_rating.map(item => item.citedby_count);

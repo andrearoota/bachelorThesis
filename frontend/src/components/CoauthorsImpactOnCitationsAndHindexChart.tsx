@@ -1,7 +1,7 @@
 import { ScatterEChart, EChartsOption } from "./EchartsBaseComponent/ScatterEChart";
 import { Paper } from "@mui/material";
 
-export interface CorrCitationCoauthorsType {
+export interface CoauthorsImpactOnCitationsAndHindexType {
     correlation: number;
     data: DataType[];
 }
@@ -12,10 +12,10 @@ interface DataType {
 }
 
 interface Props {
-    data: CorrCitationCoauthorsType | undefined
+    data: CoauthorsImpactOnCitationsAndHindexType | undefined
 }
 
-export default function CorrCitationCoauthorsChart({data}: Props) {
+export default function CoauthorsImpactOnCitationsAndHindexChart({data}: Props) {
     const scatterData = data?.data.map(item => [item.author_count, item.citedby_count]);
     const title = `Citations by Author Count, correlation: ${data?.correlation}`
     

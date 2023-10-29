@@ -1,16 +1,16 @@
 import { HeatmapEChart, EChartsOption } from "./EchartsBaseComponent/HeatmapEChart";
 import { Paper } from "@mui/material";
 
-export interface HIndexType {
+export interface AnalyzeHindexInfluentialArticlesTimingType {
     weight_career_avg: number;
     weight_career_data: number[];
 }
 
 interface Props {
-    data: HIndexType | undefined
+    data: AnalyzeHindexInfluentialArticlesTimingType | undefined
 }
 
-export default function HIndex({data}: Props) {
+export default function AnalyzeHindexInfluentialArticlesTimingChart({data}: Props) {
     const occurrences = {};
 
     data?.weight_career_data.forEach(value => {

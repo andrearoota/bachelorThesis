@@ -9,11 +9,11 @@ interface FormData {
 }
 
 interface Props {
-  setSavedAnalysis: React.Dispatch<React.SetStateAction<Analysis[]>>;
+  setSavedAnalyses: React.Dispatch<React.SetStateAction<Analysis[]>>;
   setAnalysisShow: React.Dispatch<React.SetStateAction<Analysis | undefined>>;
 }
 
-export default function FormNewAnalysis({setAnalysisShow, setSavedAnalysis}: Props) {
+export default function FormNewAnalysis({setAnalysisShow, setSavedAnalyses}: Props) {
   const [formData, setFormData] = React.useState<FormData>({title: '', 'h-index': ''});
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -28,7 +28,7 @@ export default function FormNewAnalysis({setAnalysisShow, setSavedAnalysis}: Pro
     const title = formData.title
     const datetime = new Date()
     
-    fetch('http://localhost/api/all_analysis?' + new URLSearchParams([['h-index', hIndex], ['title', title]]))
+    fetch('http://localhost/api/all_analyses?' + new URLSearchParams([['h-index', hIndex], ['title', title]]))
     .then(response => response.json())
     .then(data => {
       const fakeObj: Analysis = {
@@ -38,7 +38,7 @@ export default function FormNewAnalysis({setAnalysisShow, setSavedAnalysis}: Pro
         datetime: { $date: datetime.toISOString()},
         data: data
       }
-      setSavedAnalysis((prevState: Analysis[]) => {
+      setSavedAnalyses((prevState: Analysis[]) => {
         return [...prevState, fakeObj];
       })
 
