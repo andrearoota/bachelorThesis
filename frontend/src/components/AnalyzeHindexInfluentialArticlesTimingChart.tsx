@@ -3,7 +3,7 @@ import { Paper } from "@mui/material";
 
 export interface AnalyzeHindexInfluentialArticlesTimingType {
     weight_career_avg: number;
-    weight_career_data: number[];
+    data: number[];
 }
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 export default function AnalyzeHindexInfluentialArticlesTimingChart({data}: Props) {
     const occurrences = {};
 
-    data?.weight_career_data.forEach(value => {
+    data?.data.forEach(value => {
         const rounded = Math.round(value * 100) / 100; // Arrotondiamo alla seconda cifra decimale
         occurrences[rounded] = (occurrences[rounded] || 0) + 1;
     });

@@ -10,6 +10,8 @@ import AverageCoauthorsVariationAfterYearsChart, { AverageCoauthorsVariationAfte
 import CitationCountBasedOnConferenceRankingChart, { CitationCountBasedOnConferenceRankingType } from './components/CitationCountBasedOnConferenceRankingChart';
 import AnalyzeHindexInfluentialArticlesTimingChart, { AnalyzeHindexInfluentialArticlesTimingType } from './components/analyzeHindexInfluentialArticlesTimingChart';
 import CoauthorsImpactOnCitationsAndHindexChart, { CoauthorsImpactOnCitationsAndHindexType } from './components/CoauthorsImpactOnCitationsAndHindexChart';
+import CorrelationBetweenHindexAndCareerDurationChart, { CorrelationBetweenHindexAndCareerDurationType } from './components/CorrelationBetweenHindexAndCareerDurationChart';
+import CorrelationBetweenHindexAndExcludedArticlesChart, { CorrelationBetweenHindexAndExcludedArticlesType } from './components/CorrelationBetweenHindexAndExcludedArticlesChart';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Item = styled(Paper)(({ theme }) => ({
@@ -83,6 +85,12 @@ export default function App() {
         </Grid>
         <Grid xs={6}>
           <AnalyzeHindexInfluentialArticlesTimingChart data={analysisShow?.data.analyze_hindex_influential_articles_timing as AnalyzeHindexInfluentialArticlesTimingType} />
+        </Grid>
+        <Grid xs={6}>
+          <CorrelationBetweenHindexAndCareerDurationChart data={analysisShow?.data.correlation_between_hindex_and_career_duration as CorrelationBetweenHindexAndCareerDurationType} />
+        </Grid>
+        <Grid xs={6}>
+          <CorrelationBetweenHindexAndExcludedArticlesChart data={analysisShow?.data.correlation_between_hindex_and_excluded_articles as CorrelationBetweenHindexAndExcludedArticlesType} />
         </Grid>
       </Grid>
     </Box>
