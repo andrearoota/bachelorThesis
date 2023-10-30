@@ -9,7 +9,8 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Analysis } from '../App';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
 
 interface Props {
   rows: Analysis[];
@@ -29,10 +30,21 @@ export default function TableSavedAnalysis({rows, setAnalysisShow}: Props) {
     setPage(0);
   };
 
+  const exportData = (data: Analysis) => {
+    const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
+      JSON.stringify(data)
+    )}`;
+    const link = document.createElement('a');
+    link.href = jsonString;
+    link.download = `${data.name}.json`;
+
+    link.click();
+  };
+
   return (
     <Paper sx={{ width: '100%' }}>
       <Typography variant="h6" padding={2} paddingBottom={0}>
-        View old analysis
+        View old analyses
       </Typography>
       <Box padding={2}>
         <TableContainer sx={{ maxHeight: 440 }}>
@@ -77,9 +89,14 @@ export default function TableSavedAnalysis({rows, setAnalysisShow}: Props) {
                         {date.toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        <Button variant="contained" endIcon={<VisibilityIcon />} size="small" onClick={() => {setAnalysisShow(row)}}>
-                          View
-                        </Button>
+                        <Stack direction="row" spacing={2}>
+                          <Button variant="contained" endIcon={<VisibilityIcon />} size="small" onClick={() => {setAnalysisShow(row)}}>
+                            View
+                          </Button>
+                          <Button variant="contained" endIcon={<DownloadIcon />} size="small" onClick={() => {exportData(row)}}>
+                            Download
+                          </Button>
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   );
