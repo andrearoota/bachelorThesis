@@ -11,7 +11,7 @@ class AggregateDocuments:
     COLLECTION_AUTHORS = 'collectionAuthors'
     COLLECTION_ABSTRACTS = 'collectionAbstracts'
     COLLECTION_AGGREGATE = 'collectionAuthorsAggregate'
-    FILENAME_CONFERENCE_RATING = '/Users/andrearota/Documents/GitHub/bachelorThesis/scraper/data/GII-GRIN-SCIE-Conference-Rating-24-ott-2021.csv'
+    FILENAME_CONFERENCE_RATING = './data/GII-GRIN-SCIE-Conference-Rating-24-ott-2021.csv'
 
     def __init__(self, mongodb_uri):
         self.mongodb_uri = mongodb_uri
@@ -32,12 +32,33 @@ class AggregateDocuments:
         return spark_collection.withColumn('author_ids_array', split(col('author_ids'), ';'))
 
     def join_conference_rating(self, spark, spark_abstracts):
-        df_conference_rating = spark.read.options(delimiter=';', header=True).csv(self.FILENAME_CONFERENCE_RATING)
-        df_conference_rating = df_conference_rating.filter(df_conference_rating['GGS Rating'] != 'Work in Progress')
-        df_conference_rating = df_conference_rating.withColumnRenamed('GGS Rating','GGS_Rating')
+        spark_conferences = spark \
+            .read \
+            .options(delimiter=';', header=True) \
+            .csv(self.FILENAME_CONFERENCE_RATING)
+        
+        spark_conferences = spark_conferences \
+            .filter(spark_conferences['GGS Rating'] != 'Work in Progress') \
+            .withColumnRenamed('GGS Rating','GGS_Rating') \
+            .withColumn('Title', lower(spark_conferences.Title))
 
-        return spark_abstracts.alias('base').join(df_conference_rating.alias('external'), lower(col('publicationName')).contains(lower(df_conference_rating['Title'])), 'left') \
-            .selectExpr('base.*', 'external.GGS_Rating')
+        spark_abstracts = spark_abstracts \
+            .withColumn(
+                'publicationName',
+                lower(spark_abstracts.publicationName)
+            )
+
+        spark_join = spark_abstracts \
+            .alias('abstracts') \
+            .join(
+                spark_conferences.alias('conferences'),
+                col('publicationName') \
+                    .contains(spark_conferences.Title),
+                'left'
+            )
+        
+        return spark_join \
+            .selectExpr('abstracts.*', 'conferences.GGS_Rating')
 
     def aggregate_main_authors(self, spark_authors, spark_abstracts):
         spark_main_authors = spark_abstracts. \
@@ -80,16 +101,8 @@ class AggregateDocuments:
         print('Get all authors from authors')
         spark_authors = self.get_authors_from_authors_collection(spark)
 
-        """ if spark_authors.isEmpty():
-            print('there are zero authors')
-            return """
-
         print('Get all abstracts from abstracts')
         spark_abstracts = self.get_abstracts_from_abstracts_collection(spark)
-
-        """ if spark_abstracts.isEmpty():
-            print('there are zero abstracts')
-            return """
 
         print('Convert some string fields to int')
         spark_authors = self.convert_string_column_to_int(spark_authors, 'h-index')
