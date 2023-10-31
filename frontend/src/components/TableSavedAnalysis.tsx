@@ -11,6 +11,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Analysis } from '../App';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import { getInstanceByDom, ECharts } from 'echarts/core'
 
 interface Props {
   rows: Analysis[];
@@ -30,16 +31,43 @@ export default function TableSavedAnalysis({rows, setAnalysisShow}: Props) {
     setPage(0);
   };
 
+  const setDataAndDownload = (data: Analysis) => {
+    setAnalysisShow(data)
+    setTimeout(exportData, 1000, data);
+  };
+
   const exportData = (data: Analysis) => {
+    getAllInstances().forEach((instance: ECharts, index: number) => {
+      const link = document.createElement('a');
+      link.href = instance.getDataURL();
+      link.download = `chart-${index}.svg`;
+      link.click();
+    });
+
     const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-      JSON.stringify(data)
+    JSON.stringify(data)
     )}`;
+
     const link = document.createElement('a');
     link.href = jsonString;
     link.download = `${data.name}.json`;
-
     link.click();
   };
+
+  const getAllInstances = (): ECharts[] => {
+    const instances: ECharts[] = [];
+    // Probably will break down in the future
+    document.querySelectorAll('canvas[_echarts_instance_], div[_echarts_instance_]').forEach(
+      function(e: Element) {
+        const instance: ECharts | undefined = getInstanceByDom(e as HTMLElement);
+        if(instance){
+            instances.push(instance);
+        }        
+      }
+    );
+    return instances;
+}
+
 
   return (
     <Paper sx={{ width: '100%' }}>
@@ -93,7 +121,7 @@ export default function TableSavedAnalysis({rows, setAnalysisShow}: Props) {
                           <Button variant="contained" endIcon={<VisibilityIcon />} size="small" onClick={() => {setAnalysisShow(row)}}>
                             View
                           </Button>
-                          <Button variant="contained" endIcon={<DownloadIcon />} size="small" onClick={() => {exportData(row)}}>
+                          <Button variant="contained" endIcon={<DownloadIcon />} size="small" onClick={() => {setDataAndDownload(row)}}>
                             Download
                           </Button>
                         </Stack>
