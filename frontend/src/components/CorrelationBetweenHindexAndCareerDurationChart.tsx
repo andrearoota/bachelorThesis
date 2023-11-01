@@ -33,7 +33,8 @@ export default function CorrelationBetweenHindexAndCareerDurationChart({data}: P
         },
         tooltip: {
             trigger: 'item',
-            formatter: function(params) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter: function(params: any) {
                 return 'H-index: ' + params.value[0] + '<br/>Duration career: ' + params.value[1];
             }
         },

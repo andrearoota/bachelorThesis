@@ -33,7 +33,8 @@ export default function CoauthorsImpactOnCitationsAndHindexChart({data}: Props) 
         },
         tooltip: {
             trigger: 'item',
-            formatter: function(params) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter: function(params: any) {
                 return 'Author count: ' + params.value[0] + '<br/>Cited by count: ' + params.value[1];
             }
         },

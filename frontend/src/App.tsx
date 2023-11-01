@@ -1,26 +1,17 @@
-import { styled } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
+import React from 'react';
+import { Box } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { Typography } from '@mui/material';
-import React from 'react';
 import TableSavedAnalysis from './components/TableSavedAnalysis';
 import FormNewAnalysis from './components/FormNewAnalysis';
 import AverageCoauthorsVariationAfterYearsChart, { AverageCoauthorsVariationAfterYearsType } from './components/AverageCoauthorsVariationAfterYearsChart';
 import CitationCountBasedOnConferenceRankingChart, { CitationCountBasedOnConferenceRankingType } from './components/CitationCountBasedOnConferenceRankingChart';
-import AnalyzeHindexInfluentialArticlesTimingChart, { AnalyzeHindexInfluentialArticlesTimingType } from './components/analyzeHindexInfluentialArticlesTimingChart';
+import AnalyzeHindexInfluentialArticlesTimingChart, { AnalyzeHindexInfluentialArticlesTimingType } from './components/AnalyzeHindexInfluentialArticlesTimingChart';
 import CoauthorsImpactOnCitationsAndHindexChart, { CoauthorsImpactOnCitationsAndHindexType } from './components/CoauthorsImpactOnCitationsAndHindexChart';
 import CorrelationBetweenHindexAndCareerDurationChart, { CorrelationBetweenHindexAndCareerDurationType } from './components/CorrelationBetweenHindexAndCareerDurationChart';
 import CorrelationBetweenHindexAndExcludedArticlesChart, { CorrelationBetweenHindexAndExcludedArticlesType } from './components/CorrelationBetweenHindexAndExcludedArticlesChart';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
 
 export interface Analysis {
   _id: {

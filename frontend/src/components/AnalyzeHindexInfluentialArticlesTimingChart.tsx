@@ -10,8 +10,11 @@ interface Props {
     data: AnalyzeHindexInfluentialArticlesTimingType | undefined
 }
 
+type OccurencesType = Record<number, number>;
+
+
 export default function AnalyzeHindexInfluentialArticlesTimingChart({data}: Props) {
-    const occurrences = {};
+    const occurrences: OccurencesType = {};
 
     data?.data.forEach(value => {
         const rounded = Math.round(value * 100) / 100; // Arrotondiamo alla seconda cifra decimale
@@ -41,7 +44,8 @@ export default function AnalyzeHindexInfluentialArticlesTimingChart({data}: Prop
         },
         tooltip: {
             position: 'right',
-            formatter: function(params) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter: function(params: any) {
                 return 'Value: ' + params.data[0] + '<br>Count: ' + params.data[2];
             }
         },

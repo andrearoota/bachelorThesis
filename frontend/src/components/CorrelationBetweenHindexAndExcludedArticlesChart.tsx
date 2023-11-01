@@ -33,7 +33,8 @@ export default function CorrelationBetweenHindexAndExcludedArticlesChart({data}:
         },
         tooltip: {
             trigger: 'item',
-            formatter: function(params) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter: function(params: any) {
                 return 'H-index: ' + params.value[0] + '<br/>Document Count: ' + params.value[1];
             }
         },

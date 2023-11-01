@@ -12,6 +12,8 @@ import { Analysis } from '../App';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import { getInstanceByDom, ECharts } from 'echarts/core'
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 interface Props {
   rows: Analysis[];
@@ -37,21 +39,21 @@ export default function TableSavedAnalysis({rows, setAnalysisShow}: Props) {
   };
 
   const exportData = (data: Analysis) => {
+    const zip = new JSZip();
+    const analysis = zip.folder('analysis');
+    
     getAllInstances().forEach((instance: ECharts, index: number) => {
-      const link = document.createElement('a');
-      link.href = instance.getDataURL();
-      link.download = `chart-${index}.svg`;
-      link.click();
+      const data = decodeURIComponent(instance.getDataURL());
+      analysis?.file(`chart-${index}.svg`, data.substring(data.indexOf(',') + 1));
     });
 
-    const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-    JSON.stringify(data)
-    )}`;
+    analysis?.file(`${data.name}.json`, JSON.stringify(data));
 
-    const link = document.createElement('a');
-    link.href = jsonString;
-    link.download = `${data.name}.json`;
-    link.click();
+    zip.generateAsync({type:'blob'})
+    .then(function(content) {
+      saveAs(content, `${data.name}.zip`);
+    });
+
   };
 
   const getAllInstances = (): ECharts[] => {
