@@ -3,7 +3,7 @@ import { Paper } from "@mui/material";
 
 export interface AverageCoauthorsVariationAfterYearsType {
     correlation: number;
-    avg_coauthors_career: AvgCoauthorsCareerType[];
+    data: AvgCoauthorsCareerType[];
 }
 
 interface AvgCoauthorsCareerType {
@@ -16,8 +16,8 @@ interface Props {
 }
 
 export default function AverageCoauthorsVariationAfterYearsChart({data}: Props) {
-    const years = data?.avg_coauthors_career.map(item => item.years_since_career_start);
-    const coauthors = data?.avg_coauthors_career.map(item => item.coauthors_count);
+    const years = data?.data.map(item => item.years_since_career_start);
+    const coauthors = data?.data.map(item => item.coauthors_count);
     const title = `Average Coauthors over Career Years, correlation: ${data?.correlation}`
     
     const option: EChartsOption = {

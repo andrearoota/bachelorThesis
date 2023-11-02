@@ -49,7 +49,7 @@ class analyses:
         return dumps(
             {
                 'correlation': df_filtered['years_since_career_start'].corr(df_filtered['coauthors_count']),
-                'avg_coauthors_career': loads(df_filtered.to_json(orient='records'))
+                'data': loads(df_filtered.to_json(orient='records'))
             }
         )
 
@@ -208,6 +208,6 @@ class analyses:
         return dumps(
             {
                 'correlation': df_filtered['GGS_Rating'].astype('category').cat.codes.corr(df_filtered['citedby_count']),
-                'avg_by_rating': loads(df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean().to_json(orient='records'))
+                'data': loads(df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean().to_json(orient='records'))
             }
         )

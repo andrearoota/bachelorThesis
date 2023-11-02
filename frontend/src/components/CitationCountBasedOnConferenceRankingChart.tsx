@@ -3,7 +3,7 @@ import { Paper } from "@mui/material";
 
 export interface CitationCountBasedOnConferenceRankingType {
     correlation: number;
-    avg_by_rating: AvgByRatingType[]
+    data: AvgByRatingType[]
   }
 
 interface AvgByRatingType {
@@ -17,8 +17,8 @@ interface Props {
 
 export default function CitationCountBasedOnConferenceRankingChart({data}: Props) {
 
-    const ratings = data?.avg_by_rating.map(item => item.GGS_Rating);
-    const citedCounts = data?.avg_by_rating.map(item => item.citedby_count);
+    const ratings = data?.data.map(item => item.GGS_Rating);
+    const citedCounts = data?.data.map(item => item.citedby_count);
     const title = `Average Cited Count by GGS Rating, correlation: ${data?.correlation}`
 
     const option: EChartsOption = {
