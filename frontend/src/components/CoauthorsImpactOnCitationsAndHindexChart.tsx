@@ -56,6 +56,16 @@ export default function CoauthorsImpactOnCitationsAndHindexChart({data}: Props) 
             min: 'dataMin',
             max: 'dataMax'
         },
+        dataZoom: [
+            {
+              type: 'slider',
+              yAxisIndex: 0
+            },
+            {
+                type: 'slider',
+                xAxisIndex: 0
+            },
+        ],
         series: [{
             type: 'scatter',
             data: scatterData,

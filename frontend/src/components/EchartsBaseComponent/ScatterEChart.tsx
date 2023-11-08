@@ -9,19 +9,21 @@ import {
   TooltipComponent,
   type TooltipComponentOption,
   GridComponent,
-  type GridComponentOption
+  type GridComponentOption,
+  DataZoomComponent,
+  type DataZoomComponentOption
 } from 'echarts/components'
 import type { ECharts, ComposeOption, SetOptionOpts } from 'echarts/core'
 import { ScatterChart, ScatterSeriesOption } from 'echarts/charts'
 
 // Register the required components
 use([
-  TitleComponent, ToolboxComponent, TooltipComponent, GridComponent, ScatterChart, SVGRenderer // If you only need to use the canvas rendering mode, the bundle will not include the SVGRenderer module, which is not needed.
+  TitleComponent, ToolboxComponent, TooltipComponent, GridComponent, DataZoomComponent, ScatterChart, SVGRenderer // If you only need to use the canvas rendering mode, the bundle will not include the SVGRenderer module, which is not needed.
 ])
 
 // Combine an Option type with only required components and charts via ComposeOption
 export type EChartsOption = ComposeOption<
-TitleComponentOption | ToolboxComponentOption| TooltipComponentOption | GridComponentOption | ScatterSeriesOption>
+TitleComponentOption | ToolboxComponentOption| TooltipComponentOption | GridComponentOption | DataZoomComponentOption | ScatterSeriesOption>
 
 export interface ReactEChartsProps {
   option: EChartsOption
