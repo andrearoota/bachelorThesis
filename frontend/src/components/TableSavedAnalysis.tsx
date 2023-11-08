@@ -42,21 +42,25 @@ export default function TableSavedAnalysis({rows, setAnalysisShow}: Props) {
     const zip = new JSZip();
     const analysis = zip.folder('analysis');
     
-    getAllInstances().forEach((instance: ECharts, index: number) => {
-      const data = decodeURIComponent(instance.getDataURL());
-      analysis?.file(`chart-${index}.svg`, data.substring(data.indexOf(',') + 1));
+    getAllEcharts()
+    .forEach((instance: ECharts, index: number) => {
+        let dataUrl = decodeURIComponent(instance.getDataURL());
+        dataUrl = dataUrl.substring(dataUrl.indexOf(',') + 1);
+        analysis?.file(`chart-${index}.svg`, dataUrl);
     });
 
-    analysis?.file(`${data.name}.json`, JSON.stringify(data));
+    analysis?.file(
+      `${data.name}.json`, 
+      JSON.stringify(data)
+    );
 
     zip.generateAsync({type:'blob'})
     .then(function(content) {
       saveAs(content, `${data.name}.zip`);
     });
-
   };
 
-  const getAllInstances = (): ECharts[] => {
+  const getAllEcharts = (): ECharts[] => {
     const instances: ECharts[] = [];
     // Probably will break down in the future
     document.querySelectorAll('canvas[_echarts_instance_], div[_echarts_instance_]').forEach(

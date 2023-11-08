@@ -31,7 +31,7 @@ class analyses:
             career_start_year = int(row['author-profile']['publication-range']['@start'])
             df_counter = pd.DataFrame(columns=['years_since_career_start', 'coauthors_count'])
 
-            for type in ['main_author', 'coauthor']:
+            for type in ['main_author']:
                 if row.articles[type] is not None:
                     df_counter_temp = pd.DataFrame(columns=['years_since_career_start', 'coauthors_count'])
                     df = pd.DataFrame(row.articles[type])
@@ -98,7 +98,7 @@ class analyses:
         df_filtered = pd.DataFrame(list(df_filtered))
 
         def extract_data(row):
-            h_index = int(row['h-index'])
+            h_index = row['h-index']
             career_start_year = int(row['author-profile']['publication-range']['@start'])
             career_end_year = int(row['author-profile']['publication-range']['@end'])
             df_abstracts = pd.DataFrame()
@@ -108,12 +108,19 @@ class analyses:
                     df_abstracts = pd.concat([df_abstracts, pd.DataFrame(row.articles[type])[['coverDate', 'citedby_count']]], ignore_index=True)
 
             if not df_abstracts.empty:
-                df_abstracts = df_abstracts.sort_values('citedby_count', ascending=False).head(h_index)
+                df_abstracts = df_abstracts \
+                    .sort_values('citedby_count', ascending=False) \
+                    .head(h_index)
 
-                df_abstracts['coverYear'] = pd.to_datetime(df_abstracts['coverDate'])
-                df_abstracts['years_since_career_start'] = df_abstracts['coverYear'].dt.year - career_start_year
+                df_abstracts['years_since_career_start'] = pd \
+                    .to_datetime(df_abstracts['coverDate']) \
+                    .dt.year - career_start_year
+
                 max_difference = career_end_year - career_start_year
-                df_abstracts['coefficient'] = df_abstracts['years_since_career_start'] / max_difference
+
+                df_abstracts['coefficient'] = \
+                    df_abstracts['years_since_career_start'] / max_difference
+                    
                 return df_abstracts['coefficient'].mean()
 
             return None
