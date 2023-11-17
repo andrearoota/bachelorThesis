@@ -17,8 +17,10 @@ interface Props {
 
 export default function CitationCountBasedOnConferenceRankingChart({data}: Props) {
 
-    const ratings = data?.data.map(item => item.GGS_Rating);
-    const citedCounts = data?.data.map(item => item.citedby_count);
+    const filteredData: AvgByRatingType[] = data?.data.filter(item => !item.GGS_Rating.toLowerCase().includes('not')) ?? []
+
+    const ratings = filteredData.map(item => item.GGS_Rating);
+    const citedCounts = filteredData.map(item => item.citedby_count);
     const title = `Average Cited Count by GGS Rating, correlation: ${data?.correlation}`
 
     const option: EChartsOption = {

@@ -62,6 +62,7 @@ export default function CorrelationBetweenHindexAndExcludedArticlesChart({data}:
           ],
         series: [{
             type: 'scatter',
+            symbolSize: 5,
             data: scatterData,
         }]
     };

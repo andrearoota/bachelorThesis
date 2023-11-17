@@ -68,6 +68,7 @@ export default function CoauthorsImpactOnCitationsAndHindexChart({data}: Props) 
         ],
         series: [{
             type: 'scatter',
+            symbolSize: 5,
             data: scatterData,
         }]
     };

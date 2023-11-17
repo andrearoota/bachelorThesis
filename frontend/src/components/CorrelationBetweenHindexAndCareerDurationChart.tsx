@@ -62,6 +62,7 @@ export default function CorrelationBetweenHindexAndCareerDurationChart({data}: P
           ],
         series: [{
             type: 'scatter',
+            symbolSize: 5,
             data: scatterData,
         }]
     };
