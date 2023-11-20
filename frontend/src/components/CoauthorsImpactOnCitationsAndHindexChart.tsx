@@ -17,11 +17,14 @@ interface Props {
 
 export default function CoauthorsImpactOnCitationsAndHindexChart({data}: Props) {
     const scatterData = data?.data.map(item => [item.author_count, item.citedby_count]);
-    const title = `Citations by Author Count, correlation: ${data?.correlation}`
-    
+    const title = `Citations by Author Count`
+    const subtitle = `Corr.: ${Math.round(data?.correlation! * 10000) / 10000}`
+
     const option: EChartsOption = {
         title: {
-            text: title
+            text: title,
+            subtext: subtitle,
+            left: 'center'
         },
         toolbox: {
             feature: {
@@ -38,23 +41,21 @@ export default function CoauthorsImpactOnCitationsAndHindexChart({data}: Props) 
                 return 'Author count: ' + params.value[0] + '<br/>Cited by count: ' + params.value[1];
             }
         },
-        /* grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        }, */
         xAxis: {
             type: 'value',
             name: 'Author count',
             min: 'dataMin',
-            max: 'dataMax'
+            max: 'dataMax',
+            nameLocation: 'middle',
         },
         yAxis: {
             type: 'value',
             name: 'Cited by count',
             min: 'dataMin',
-            max: 'dataMax'
+            max: 'dataMax',
+            nameLocation: 'middle',
+            nameGap: 25,
+            nameRotate: 90
         },
         dataZoom: [
             {

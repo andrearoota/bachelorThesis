@@ -28,11 +28,14 @@ export default function AnalyzeHindexInfluentialArticlesTimingChart({data}: Prop
     }
     heatmapData.sort((a, b) => a[0] - b[0]);
 
-    const title = `Heatmap of Weight Career, avg: ${data?.weight_career_avg}`
-    
+    const title = `Heatmap of Weight Career`
+    const subtitle = `AVG: ${Math.round(data?.weight_career_avg! * 10000) / 10000}`
+
     const option: EChartsOption = {
         title: {
-            text: title
+            text: title,
+            subtext: subtitle,
+            left: 'center'
         },
         toolbox: {
             feature: {
@@ -51,11 +54,15 @@ export default function AnalyzeHindexInfluentialArticlesTimingChart({data}: Prop
         },
         yAxis: {
             type: 'category',
-            data: ['Count']
+            data: ['Count'],
+            nameLocation: 'middle',
+            nameGap: 25,
         },
         xAxis: {
             type: 'category',
-            name: 'Value'
+            name: 'Value',
+            nameLocation: 'middle',
+            nameGap: 25,
         },
         visualMap: {
             min: 1,

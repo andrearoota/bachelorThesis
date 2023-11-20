@@ -1,5 +1,5 @@
 import pandas as pd
-from numpy import nan
+from numpy import nan, isreal
 from flask_pymongo import PyMongo
 from bson.json_util import dumps, loads
 from datetime import datetime
@@ -211,10 +211,28 @@ class analyses:
 
         df_filtered = df_filtered.apply(lambda row : extract_data(row), axis=1)
         df_filtered = pd.concat(df_filtered.tolist(), ignore_index=True)
+        df_filtered = df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean()
+
+        dict_replace_ratings_with_value = {
+            'C' : 0,
+            'B-' : 16.7,
+            'B' : 33.3,
+            'A-' : 50,
+            'A' : 66.7,
+            'A+' : 83.3,
+            'A++' : 100, 
+        }
+
+        dict_replace_value_with_ratings = {
+            value: key for key, value in dict_replace_ratings_with_value.items()
+        }
+
+        df_filtered = df_filtered.replace({'GGS_Rating': dict_replace_ratings_with_value})
+        df_filtered = df_filtered[df_filtered.applymap(isreal).all(1)] # Remove all not rated
 
         return dumps(
             {
-                'correlation': df_filtered['GGS_Rating'].astype('category').cat.codes.corr(df_filtered['citedby_count']),
-                'data': loads(df_filtered.groupby(by='GGS_Rating', as_index=False)['citedby_count'].mean().to_json(orient='records'))
+                'correlation': df_filtered['GGS_Rating'].corr(df_filtered['citedby_count']),
+                'data': loads(df_filtered.replace({'GGS_Rating': dict_replace_value_with_ratings}).to_json(orient='records'))
             }
         )

@@ -17,11 +17,14 @@ interface Props {
 
 export default function CorrelationBetweenHindexAndCareerDurationChart({data}: Props) {
     const scatterData = data?.data.map(item => [item['h-index'], item.duration_career]);
-    const title = `H-index by Duration career, correlation: ${data?.correlation}`
-    
+    const title = `H-index by Duration career`
+    const subtitle = `Corr.: ${Math.round(data?.correlation! * 10000) / 10000}`
+
     const option: EChartsOption = {
         title: {
-            text: title
+            text: title,
+            subtext: subtitle,
+            left: 'center'
         },
         toolbox: {
             feature: {
@@ -40,15 +43,19 @@ export default function CorrelationBetweenHindexAndCareerDurationChart({data}: P
         },
         xAxis: {
             type: 'value',
-            name: 'Author count',
+            name: 'H-index',
             min: 'dataMin',
-            max: 'dataMax'
+            max: 'dataMax',
+            nameLocation: 'middle',
         },
         yAxis: {
             type: 'value',
-            name: 'Cited by count',
+            name: 'Years',
             min: 'dataMin',
-            max: 'dataMax'
+            max: 'dataMax',
+            nameLocation: 'middle',
+            nameGap: 25,
+            nameRotate: 90
         },
         dataZoom: [
             {

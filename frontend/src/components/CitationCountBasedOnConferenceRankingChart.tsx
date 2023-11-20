@@ -19,13 +19,19 @@ export default function CitationCountBasedOnConferenceRankingChart({data}: Props
 
     const filteredData: AvgByRatingType[] = data?.data.filter(item => !item.GGS_Rating.toLowerCase().includes('not')) ?? []
 
+    const item_order = ['C', 'B-', 'B', 'A-', 'A', 'A+', 'A++'];
+    filteredData.sort((a, b) => item_order.indexOf(a.GGS_Rating) - item_order.indexOf(b.GGS_Rating));
+
     const ratings = filteredData.map(item => item.GGS_Rating);
     const citedCounts = filteredData.map(item => item.citedby_count);
-    const title = `Average Cited Count by GGS Rating, correlation: ${data?.correlation}`
+    const title = `Average Citations per GGS Rating`
+    const subtitle = `Corr.: ${Math.round(data?.correlation! * 10000) / 10000}`
 
     const option: EChartsOption = {
         title: {
-            text: title
+            text: title,
+            subtext: subtitle,
+            left: 'center'
         },
         toolbox: {
             feature: {
@@ -38,20 +44,19 @@ export default function CitationCountBasedOnConferenceRankingChart({data}: Props
         tooltip: {
             trigger: 'axis'
         },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
         xAxis: {
             type: 'category',
             data: ratings,
             name: 'GGS Rating',
+            nameLocation: 'middle',
+            nameGap: 25,
         },
         yAxis: {
             type: 'value',
-            name: 'Cited by count'
+            name: 'Cited by count',
+            nameLocation: 'middle',
+            nameGap: 25,
+            nameRotate: 90
         },
         series: [{
             name: title,

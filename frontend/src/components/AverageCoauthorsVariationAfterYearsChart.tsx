@@ -18,11 +18,14 @@ interface Props {
 export default function AverageCoauthorsVariationAfterYearsChart({data}: Props) {
     const years = data?.data.map(item => item.years_since_career_start);
     const coauthors = data?.data.map(item => item.coauthors_count);
-    const title = `Average Coauthors over Career Years, correlation: ${data?.correlation}`
+    const title = `Average Coauthors over Career Years`
+    const subtitle = `Corr.: ${Math.round(data?.correlation! * 10000) / 10000}`
     
     const option: EChartsOption = {
         title: {
-            text: title
+            text: title,
+            subtext: subtitle,
+            left: 'center'
         },
         toolbox: {
             feature: {
@@ -35,20 +38,19 @@ export default function AverageCoauthorsVariationAfterYearsChart({data}: Props) 
         tooltip: {
             trigger: 'axis'
         },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
         xAxis: {
             type: 'category',
             data: years,
-            name: 'Years since\n career start',
+            name: 'Years since career start',
+            nameLocation: 'middle',
+            nameGap: 25,
         },
         yAxis: {
             type: 'value',
-            name: 'Coauthors count'
+            name: 'Coauthors count',
+            nameLocation: 'middle',
+            nameGap: 25,
+            nameRotate: 90
         },
         series: [{
             name: title,
