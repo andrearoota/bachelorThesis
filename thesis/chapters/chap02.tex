@@ -1,0 +1,224 @@
+\chapter{Applicativo per la raccolta e preparazione dei dati}\label{scopusBulkDownloader}
+
+Nel contesto del presente lavoro si è reso necessario sviluppare un sistema dedicato all'acquisizione e preparazione di dati provenienti dalla piattaforma bibliografica Scopus, una delle più grandi banche dati di abstract e citazioni di letteratura scientifica peer-reviewed \cite{scopus-website} e successiva aggregazione con la classificazione delle conferenze informatiche \cite{conference-rating-website} redatta dall'associazione GRuppo dei professori e ricercatori in INformatica (GRIN) \cite{GRIN-website}.
+
+\section{Progettazione e architettura}
+In questo paragrafo vengono prima esaminati alcuni aspetti delle policy di Elsevier, successivamente si approfondiscono le API di Scopus illustrandone il funzionamento e i dati gestiti. Si conclude con una presentazione dell'architettura selezionata e del flusso di lavoro dell'applicativo.
+\newline
+
+Al fine di fornire una panoramica chiara e comprensibile delle decisioni architetturali adottate in questo studio è necessario delineare alcune disposizioni stipulate all'interno delle ``Elsevier Provisions for Text and Data Mining'' \cite{scopus-policy}, così come le direttive associate all'utilizzo delle chiavi di accesso alle API di Scopus \cite{scopus-key-settings}:
+\begin{itemize}
+    \item \textbf{Divieto di scraping}: Elsevier enuncia con precisione nei suoi termini di servizio le modalità consentite per l'accesso e l'interrogazione dei suoi contenuti attraverso le API. È espressamente proibito l'impiego di robot, spider o qualsiasi altro software automatizzato per estrarre dati dai loro portali.
+
+    \item \textbf{Limite chiavi}: ogni utente è autorizzato a generare un massimo di dieci chiavi per interagire con le API di Elsevier.
+
+    \item \textbf{Limite richieste}: ogni chiave individuale è soggetta a restrizioni quantificate sia in termini di richieste al secondo che settimanali, differenti a seconda del servizio specifico desiderato. Inoltre a seconda del tipo di dati voluti, potrebbero essere imposti limiti sul numero di risultati restituiti da ogni richiesta.
+
+    \item \textbf{Rete universitaria}: l'accesso a Scopus è consentito unicamente attraverso la rete universitaria, a meno che non venga fornito un token specifico associato a una determinata chiave per l'utilizzo esterno.
+\end{itemize}
+
+Le API di Scopus adottano un'architettura REpresentational State Transfer (RESTful) \cite{scopus-api-description}, questo significa che esse forniscono una rappresentazione dello stato di una risorsa specifica, permettendo un'interazione affidabile e scalabile con i dati. Una delle principali caratteristiche di questa architettura è la capacità di rispondere a richieste in diversi formati e, in particolare, le API di Scopus supportano vari formati di risposta, tra cui \texttt{application/xml}, \texttt{application/json} e \texttt{text/html} \cite{scopus-api-specs}. Per le esigenze del presente lavoro, ci concentreremo sull'acquisizione di documenti nel formato JavaScript Object Notation (JSON), che offre una struttura dati leggibile e facilmente manipolabile per l'analisi e l'elaborazione.
+
+Per garantire una chiara comprensione dell'organizzazione dei dati acquisiti dalla piattaforma Scopus, è essenziale delineare la struttura delle due tipologie di documenti JSON trattati nel presente lavoro: autore e abstract.
+Il primo, l'autore, incapsula le informazioni relative a un ricercatore catalogato su Scopus \cite{author-scopus}; all'interno della Tabella~\ref{tab:json_structure_author} viene offerta una panoramica dettagliata, concentrandosi sugli attributi di maggiore rilievo per il presente lavoro.
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|l|l|X|}
+        \hline
+        \textbf{Campo} & \textbf{Tipo di Dato} & \textbf{Descrizione} \\
+        \hline
+        \texttt{\_id} & Oggetto & Identificativo unico del documento \\
+        \hline
+        \texttt{coredata} & Oggetto & Dati identificativi dell'autore e dei suoi contributi \\
+        \hline
+        \texttt{h-index} & Stringa & $h$-index dell'autore \\
+        \hline
+        \texttt{coauthor-count} & Stringa & Numero di coautori dell'autore \\
+        \hline
+        \texttt{affiliation-current} & Oggetto & Affiliazione corrente dell'autore \\
+        \hline
+        \texttt{subject-areas} & Oggetto & Aree di specializzazione dell'autore \\
+        \hline
+        \texttt{author-profile} & Oggetto & Profilo dettagliato dell'autore, incluso nome, affiliazioni passate e periodo di pubblicazione  \\
+        \hline
+    \end{tabularx}
+    \caption{Struttura JSON dell'oggetto ``Autore''}
+    \label{tab:json_structure_author}
+\end{table}
+
+Il secondo, l'abstract, contiene le informazioni di una pubblicazione catalogata su Scopus \cite{abstract-scopus}. Similmente a quanto fatto per gli autori, in Tabella~\ref{tab:json_structure_abstract} sono presenti i principali campi di un abstract.
+
+Tenendo conto dei requisiti e delle specifiche sopra menzionati, è stato concepito un sistema formato da un modulo dedicato all'interfacciamento con le API e alla successiva preparazione dei dati e un database di tipo non relazionale orientato ai documenti per la memorizzazione e gestione delle informazioni raccolte.
+
+Per ultimo, si definisce il flusso sequenziale di lavoro dell'applicativo, ossia la sequenza di eventi necessari per scaricare e aggregare i dati:
+\begin{enumerate}
+    \item \textbf{Estrazione degli abstract}: download degli abstract dalle API di Scopus secondo i criteri decisi dall'utente e successivo salvataggio su database.
+    \item \textbf{Estrazione degli autori}: ricerca degli identificativi degli autori all'interno degli abstract e successivo recupero delle informazioni dalle API di Scopus e archiviazione su database.
+    \item \textbf{Aggregazione dei Dati}: Aggregazione degli autori e degli abstract da database con i dati presenti nella classificazione delle conferenze informatiche redatta da GRIN.
+\end{enumerate}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|l|l|X|}
+        \hline
+        \textbf{Campo} & \textbf{Tipo di Dato} & \textbf{Descrizione} \\
+        \hline
+        \texttt{\_id} & Oggetto & Identificativo unico dell'abstract nella forma di un ObjectId. \\
+        \hline
+        \texttt{title} & Stringa & Titolo dell'abstract o dell'articolo. \\
+        \hline
+        \texttt{subtype} & Stringa & Codice per il sottotipo dell'articolo. \\
+        \hline
+        \texttt{affilname} & Stringa & Nome dell'istituzione affiliata. \\
+        \hline
+        \texttt{affiliation\_city} & Stringa & Città dell'istituzione affiliata. \\
+        \hline
+        \texttt{affiliation\_country} & Stringa & Paese dell'istituzione affiliata. \\
+        \hline
+        \texttt{author\_count} & Stringa & Numero totale di autori dell'articolo. \\
+        \hline
+        \texttt{author\_ids} & Stringa & Elenco degli ID degli autori su Scopus separati da ``;'', il primo è l'autore principale. \\
+        \hline
+        \texttt{coverDate} & Stringa & Data di pubblicazione dell'articolo. \\
+        \hline
+        \texttt{publicationName} & Stringa & Nome della pubblicazione o della rivista. \\
+        \hline
+        \texttt{aggregationType} & Stringa & Tipo di aggregazione (es. rivista, conferenza, ecc.). \\
+        \hline
+        \texttt{description} & Stringa & Descrizione o sommario dell'articolo. \\
+        \hline
+        \texttt{citedby\_count} & Numero & Numero di citazioni dell'articolo. \\
+        \hline
+    \end{tabularx}
+    \caption{Struttura JSON dell'oggetto ``Abstract''}
+    \label{tab:json_structure_abstract}
+\end{table}
+
+\section{Strumenti e tecnologie utilizzate}\label{scopusBulkDownloader-tech}
+Si è deciso di sviluppare il modulo preposto all'interfacciamento con le API e alla successiva preparazione dei dati utilizzando Python \cite{python}, un linguaggio di programmazione ad alto livello ampiamente utilizzato per lo sviluppo di applicazioni web, scripting, analisi dati e intelligenza artificiale.
+Mentre, riguardo alla selezione del sistema di gestione del database, la scelta è ricaduta su MongoDB \cite{mongodb-github}, un Database Management System (DBMS) non relazionale orientato ai documenti che archivia le informazioni in documenti BSON, una rappresentazione binaria del noto formato JSON. Questa peculiarità conferisce a MongoDB una notevole flessibilità, permettendo di adattare e modificare lo schema dei dati senza la rigidità strutturale tipica dei database relazionali. Nell'ambito di questo progetto, l'adozione di questa tecnologia è stata motivata principalmente da due fattori chiave: la sua capacità di gestire ampie quantità di dati e la sua conformità ai modelli orientati ai documenti; tale natura si è rivelata particolarmente aderente alle esigenze del nostro contesto, in cui i dati provenienti dalla piattaforma Scopus richiedono una certa versatilità nella loro elaborazione e archiviazione.
+
+Uno degli strumenti chiave impiegati per costruire l'applicativo è Pybliometrics \cite{ROSE2019100263, pybliometrics-github}, una libreria Python specificamente progettata per l'interazione con le API di Scopus. Questa libreria facilita notevolmente il processo di acquisizione dei dati bibliometrici in base ai criteri specificati occupandosi della gestione delle chiavi multiple e dei limiti di richieste al secondo.
+
+Per la manipolazione e aggregazione dei dati è stato fatto ricorso, attraverso l'uso delle API progettate per Python, ad Apache Spark \cite{spark-github}, un motore distribuito di elaborazione dati open source per grandi dataset che offre prestazioni elevate e supporta un'ampia varietà di operazioni analitiche.
+
+Invece, per la gestione e il salvataggio dei dati, si è fatto uso di PyMongo \cite{pymongo-github}, un driver Python per MongoDB che permette di interagire con il database non relazionale, garantendo operazioni di lettura e scrittura efficienti e un modello di dati flessibile, adattandosi perfettamente alle esigenze del progetto.
+
+Infine, sono state utilizzate in maniera minore Pandas \cite{pandas-github}, uno degli strumenti più potenti e flessibili disponibili per l'analisi e la manipolazione dei dati in Python e la libreria Python-dotenv \cite{python-dotenv-github} per la gestione delle variabili d'ambiente.
+
+In sintesi, l'applicativo sfrutta una combinazione di librerie Python per scaricare, manipolare e aggregare dati da Scopus, e memorizzare i risultati in un database MongoDB. Queste tecnologie e strumenti sono stati scelti per la loro affidabilità, efficienza e facilità d'uso nel contesto della raccolta e dell'analisi dei dati.
+
+\section{Aggregazione dei dati}
+L'aggregazione dei dati riveste un ruolo cruciale nell'intero processo: una preparazione adeguata e accurata della collezione di documenti non solo semplifica, ma arricchisce e potenzia la successiva fase di analisi.
+
+Una componente chiave di questo processo è la classificazione delle conferenze informatiche fornita da GRIN e, per fornire un quadro chiaro all'interno della Tabella~\ref{tab:example_conference_data} viene presentato un estratto del documento in formato CSV utilizzato. Questo file è delimitato dal carattere ``;'' e contiene due colonne principali: il titolo della conferenza e e la corrispondente valutazione; la classificazione GRIN prevede sette livelli, elencati in ordine decrescente: A++, A+, A, A-, B, B-, C.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|X|l|}
+        \hline
+        \textbf{Title} & \textbf{GGS Rating} \\
+        \hline
+        CONFERENCE ON ARTIFICIAL INTELLIGENCE & A++ \\
+        \hline
+        ASIAN CONFERENCE ON COMPUTER VISION & B \\
+        \hline
+        ACM SYMPOSIUM ON APPLIED COMPUTING & A- \\
+        \hline
+    \end{tabularx}
+    \caption{Classificazione delle conferenze: un esempio di dati}
+    \label{tab:example_conference_data}
+\end{table}
+
+L'algoritmo di aggregazione dei dati, implementato nella classe $AggregateDocuments$, si articola in quattro fasi principali, ciascuna con una funzione specifica:
+
+\begin{enumerate}
+  \item \textbf{Conversione dei tipi di dati}: alcuni campi, come \texttt{h-index} e \texttt{coauthor-count} per gli autori e \texttt{author\_count} per gli abstract, vengono convertiti da stringhe a interi semplificando le successive operazioni di analisi.
+  
+  \item \textbf{Correlazione con la classificazione delle conferenze}: per associare gli abstract alla classificazione delle conferenze informatiche fornita da GRIN, l'algoritmo realizza una left-join tra gli abstract e il file CSV aggiungendo ai primi un campo \texttt{GGS\_Rating} contenente il livello di rating come illustrato nel Codice~\ref{lst:script_aggregateDocuments}.
+  
+  \item \textbf{Aggregazione abstract per autore}: ogni autore viene associato ai propri abstract distinguendo tra quelli in cui è l'autore principale e quelli in cui è coautore. Questa distinzione è resa possibile grazie all'aggiunta di un campo \texttt{articles} che include le due liste di articoli: \texttt{main\_author} e \texttt{coauthor}.
+  
+  \item \textbf{Salvataggio dei dati aggregati}: una volta completate le operazioni di aggregazione, i dati risultanti vengono archiviati in una nuova collezione MongoDB denominata ``collectionAuthorsAggregate''.
+\end{enumerate}
+
+\begin{lstfloat}
+    \begin{lstlisting}[
+    language=Python,
+    caption={Script Python per l'associazione dei rating delle conferenze},
+    label={lst:script_aggregateDocuments},
+    breaklines=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+    ]
+def join_conference_rating(self, spark, spark_abstracts):
+    spark_conferences = spark \
+        .read \
+        .options(delimiter=';', header=True) \
+        .csv(self.FILENAME_CONFERENCE_RATING)
+    
+    spark_conferences = spark_conferences \
+        .filter(spark_conferences['GGS Rating'] != 'Work in Progress') \
+        .withColumnRenamed('GGS Rating','GGS_Rating') \
+        .withColumn('Title', lower(spark_conferences.Title))
+
+    spark_abstracts = spark_abstracts \
+        .withColumn(
+            'publicationName',
+            lower(spark_abstracts.publicationName)
+        )
+
+    spark_join = spark_abstracts \
+        .alias('abstracts') \
+        .join(
+            spark_conferences.alias('conferences'),
+            col('publicationName') \
+                .contains(spark_conferences.Title),
+            'left'
+        )
+    
+    return spark_join \
+        .selectExpr('abstracts.*', 'conferences.GGS_Rating')
+    \end{lstlisting}
+\end{lstfloat}
+\section{Interfaccia utente}
+L'interfaccia utente permette agli utenti di attivare l'applicativo specificando alcuni parametri attraverso riga di comando: è possibile definire il tipo di azione da eseguire, modificare alcuni parametri e applicare dei filtri; per un'esaustiva definizione degli argomenti si rimanda alla Tabella~\ref{tab:parameters_scopusBulkDownloader}, per un esempio di comando si rimanda al Codice~\ref{lst:command_scopusBulkDownloader}.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|l|X|l|}
+        \hline
+        \textbf{Parametro} & \textbf{Descrizione} & \textbf{Valore Predefinito} \\
+        \hline
+        \texttt{-h, -{}-help} & Mostra la lista di tutti i comandi & - \\
+        \hline
+        \texttt{-{}-type} & Specifica l'azione da eseguire: & - \\
+        & \texttt{aut}, scarica gli autori & \\
+        & \texttt{abs}, scarica gli abstract & \\
+        & \texttt{agg}, aggrega i dati & \\
+        \hline
+        \texttt{-{}-urimongo} & URI di MongoDB & \texttt{mongodb://localhost:27017/} \\
+        \hline
+        \texttt{-{}-subjarea} & Valido con \texttt{abs}, codice dell'area tematica desiderata & \texttt{COMP} \\
+        \hline
+        \texttt{-{}-start} & Valido con \texttt{abs}, indica l'anno di inizio da cui scaricare  & \texttt{1850} \\
+        \hline
+        \texttt{-{}-end} & Valido con \texttt{abs}, indica l'anno di fine da cui scaricare & \texttt{2007} \\
+        \hline
+    \end{tabularx}
+    \caption{Parametri del comando \texttt{scopusBulkDownloader}}
+    \label{tab:parameters_scopusBulkDownloader}
+\end{table}
+
+\begin{lstfloat}
+    \begin{lstlisting}[basicstyle=\ttfamily, caption={Comando per scaricare gli abstract dal 2010 al 2021}, label={lst:command_scopusBulkDownloader}]
+scopusBulkDownloader --type abs --start 2010 --end 2021
+    \end{lstlisting}
+\end{lstfloat}
+
+
+\section{Limitazioni delle tecnologie utilizzate}
+La necessità di analizzare un vasto insieme di autori e abstract si è scontrata con le restrizioni stabilite da Elsevier \cite{scopus-key-settings}. In particolare, le API consentono di scaricare un massimo di 5.000 autori per chiave, il che si traduce in un tetto massimo di 50.000 oggetti a settimana e questo limite, unito alla restrizione di tre richieste al secondo, esaurisce in circa cinque ore di download la quota settimanale disponibile.
+
+Per quanto concerne gli abstract, le condizioni sono leggermente più permissive poiché il limite settimanale è fissato a 20.000 richieste, con una frequenza massima di nove al secondo e ogni singola interrogazione può recuperare fino a 25 abstract. Sebbene le restrizioni sugli autori precludano l'analisi di un vasto numero di essi, le limitazioni sugli abstract si traducono in lunghi periodi di download esclusivamente nel caso di volumi di dati particolarmente elevati.
+
+Un'ulteriore complicazione deriva dalla necessità di effettuare questi download all'interno della rete universitaria dal momento che Elsevier fornisce un unico token, associato a una singola chiave, per ogni progetto. Di conseguenza, nel caso in cui vi sia la necessità di scaricare grandi quantità di dati, non è possibile procedere al di fuori dell'infrastruttura universitaria.

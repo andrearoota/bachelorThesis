@@ -1,0 +1,35 @@
+\chapter{Introduzione}
+\section{Obiettivi della tesi}
+Questa tesi ha come obiettivo primario lo sviluppo di un'applicazione software dedicata all'acquisizione di dati  bibliometrici, attraverso l'utilizzo di API (interfaccia di programmazione dell'applicazione), dalla piattaforma bibliografica Scopus. Il software mira, successivamente, all'analisi di tali dati, fornendo una visualizzazione grafica dei risultati semplice e intuitiva.
+
+Nello specifico, questa tesi si propone di raggiungere tre obiettivi interconnessi:
+\begin{enumerate}
+    \item \textbf{Download di massa}: il primo obiettivo è la progettazione e lo sviluppo di un software in grado di accedere alla piattaforma Scopus attraverso API. Questo software sarà in grado di recuperare dati relativi agli articoli e agli autori.
+
+    \item \textbf{Analisi dei dati}: un secondo obiettivo è l'implementazione di strumenti di analisi che consentano di elaborare e manipolare i dati bibliometrici scaricati. Ciò includerà la possibilità di aggregare e analizzare diversi indici bibliometrici e dati precedentemente raccolti.
+
+    \item \textbf{Interfaccia utente}: la creazione di un'interfaccia utente intuitiva e accessibile rappresenta un terzo obiettivo fondamentale. L'obiettivo è fornire ai ricercatori, istituzioni accademiche e bibliotecari un'interfaccia utente che semplifichi l'accesso ai dati e agevoli la navigazione tra le diverse analisi.
+\end{enumerate}
+Questo lavoro punta quindi a costruire uno strumento che semplifichi l'analisi di un certo gruppo di autori scientifici e a fornire una base solida per ulteriori sviluppi in questo campo.
+
+Tutto il codice sviluppato durante la ricerca è reso disponibile in un repository dedicato su GitHub \cite{codeBachelorThesis}. In linea con i principi di apertura e accessibilità, il codice è pubblicato sotto la licenza MIT, una scelta che riflette l'impegno verso la condivisione delle conoscenze e la facilitazione dell'uso e dell'adattamento del software da parte di altri ricercatori e sviluppatori.
+
+
+\section{Importanza dell'analisi bibliometrica per autori scientifici}
+
+La bibliometria, una branca della scientometria, utilizza metodi matematici e statistici per esaminare la distribuzione delle pubblicazioni scientifiche e valutarne l'importanza all'interno delle comunità accademiche. Questa metodologia quantitativa si avvale di indicatori bibliometrici, derivati da fonti bibliografiche affidabili, per misurare vari aspetti della ricerca scientifica, come produttività, impatto, popolarità, prestigio e capacità critica \cite{cassella2011nuovi}.
+
+L'analisi bibliometrica offre molteplici vantaggi quando utilizzata in modo oculato. Ad esempio è uno strumento per le istituzioni accademiche, che possono sfruttarla per valutare i ricercatori e assegnare finanziamenti per la ricerca. Inoltre, aiuta i bibliotecari a individuare le riviste di riferimento da acquisire per le collezioni e fornisce un criterio per i redattori di riviste scientifiche nella selezione di revisori per le pubblicazioni. Non da ultimo, l'analisi bibliometrica rappresenta un mezzo semplice, economico ed efficace per confrontare e valutare l'attività di ricerca in vari contesti.
+
+Gli autori scientifici, grazie ai risultati dell'analisi bibliometrica, possono:
+\begin{enumerate}
+  \item Valutare l'impatto del proprio lavoro di ricerca dimostrando l'originalità e la rilevanza della propria attività.
+  \item Identificare i colleghi e le istituzioni che hanno contribuito in modo significativo alla propria produzione scientifica scegliendo collaborazioni scientifiche fruttuose.
+  \item Selezionare le conferenze e le riviste più adatte per la pubblicazione delle proprie attività, in quanto la scelta di dove pubblicare o presenziare può aumentare la visibilità delle proprie ricerche \cite{anziliero2013bibliometria}.
+\end{enumerate}
+
+All'interno di questo lavoro verrà esaminato principalmente l'indicatore bibliometrico $h$-index (o indice di Hirsch), un indicatore bibliometrico che misura la produttività e l'impatto di un autore o di un ricercatore sulla base delle citazioni delle sue pubblicazioni scientifiche. Il calcolo dell'$h$-index avviene nel seguente modo: le pubblicazioni dell'autore vengono ordinate in ordine decrescente in base al numero di citazioni ricevute, e l'$h$-index rappresenta il numero massimo di pubblicazioni che hanno ricevuto almeno $h$ citazioni ciascuna \cite{h-index}.
+
+A titolo di esempio, consideriamo un autore che ha pubblicato 5 articoli e che ha ricevuto rispettivamente 12, 7, 7, 4 e 2 citazioni per ciascun articolo; il suo $h$-index sarà 4, poiché almeno 4 pubblicazioni hanno ricevuto almeno 4 citazioni ciascuna.
+
+Tuttavia, è importante notare che l'$h$-index, sebbene sia un indicatore utile, non è privo di critiche poiché, essendo un semplice numero, non fornisce sempre il quadro più completo dell'impatto del lavoro di un autore. Ad esempio può variare in base alla piattaforma bibliografica utilizzata e può essere influenzato dal fenomeno dell'autocitazionismo, sia a livello individuale che organizzativo. Inoltre, l'$h$-index potrebbe non dare il giusto riconoscimento alle pubblicazioni altamente citate \cite{h-index-problems, h-index-problems-2}.

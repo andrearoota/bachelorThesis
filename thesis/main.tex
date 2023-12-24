@@ -1,0 +1,53 @@
+\documentclass[italian,bachelor]{unibg}
+
+\title{Analisi dei fattori \\bibliometrici per autori di paper scientifici}
+\subtitle{Sviluppo di un software per la \\raccolta e lo studio dei dati}
+\advisor{Chiar.mo Prof.\newline Stefano~Giulio~Paraboschi}
+% \coadvisor{Chiar.mo Prof.~Ed Smith}
+
+\department{Ingegneria Gestionale, dell'Informazione e della Produzione}
+\course{Ingegneria Informatica}
+\class{L-8}
+
+\author{Andrea Rota}
+\studentid{1054128}
+\academicyear{2022/2023}
+
+\begin{document}
+
+% ----------------------- Default listings
+\definecolor{lightbackground}{RGB}{250, 250, 250}
+
+\lstset{
+    upquote=true,
+    numbers=left,
+    stepnumber=1,
+    frame=single,
+    backgroundcolor = \color{lightbackground}
+}
+
+\maketitle
+\emptypage
+
+\begin{abstract}
+Questa tesi si concentra sullo sviluppo di un'applicazione per l'acquisizione e l'analisi di dati bibliometrici sfruttando le API della piattaforma Scopus. Il progetto si articola su tre obiettivi fondamentali: la creazione di un sistema efficace per il download massivo di dati relativi ad articoli e autori da Scopus; lo sviluppo di strumenti analitici sofisticati per la manipolazione e l'analisi di tali dati, che comprendono aggregazione e interpretazione; e la realizzazione di un'interfaccia utente intuitiva, progettata per facilitare l'accesso e la navigazione attraverso diverse tipologie di analisi e relative visualizzazioni grafiche. L'intento del software è quello di rendere l'analisi bibliometrica di specifici gruppi di autori scientifici più accessibile e fruibile, ponendo le basi per ulteriori innovazioni in questo campo. In aggiunta, lo studio pone in evidenza alcune delle limitazioni del progetto attuale e propone direzioni future per il suo sviluppo e miglioramento.
+\end{abstract}
+
+\emptypage
+\toc[figures,tables,listings]
+\emptypage
+
+\clearpage
+\pagenumbering{arabic}
+
+\input{chapters/chap01.tex}
+\input{chapters/chap02.tex}
+\input{chapters/chap03.tex}
+\input{chapters/chap04.tex}
+\input{chapters/chap05.tex}
+\input{chapters/acknowledgements.tex}
+
+\nocite{*}
+\printbibliography[heading=bibintoc]
+
+\end{document}
